@@ -13,6 +13,20 @@ const nextConfig: NextConfig = {
    * porque o jsdom do Vitest já define `DOMMatrix` global.
    */
   serverExternalPackages: ["pdfjs-dist", "@napi-rs/canvas"],
+
+  /**
+   * O `pdfjs-dist` só chama `require("@napi-rs/canvas")` dentro de um try/catch — o
+   * rastreamento estático de arquivos do Vercel (`@vercel/nft`) não segue esse tipo de
+   * require condicional, então o pacote (e o binário nativo da plataforma dentro dele)
+   * nunca entra no bundle da função serverless mesmo estando instalado e declarado como
+   * externo. Isso força a inclusão manualmente.
+   */
+  outputFileTracingIncludes: {
+    // O binário nativo da plataforma (ex.: @napi-rs/canvas-linux-x64-gnu) é um pacote
+    // irmão de @napi-rs/canvas, resolvido via optionalDependencies — precisa do glob
+    // amplo, não só da pasta do pacote principal.
+    "/api/resume-import": ["./node_modules/@napi-rs/**/*"],
+  },
 };
 
 export default nextConfig;
