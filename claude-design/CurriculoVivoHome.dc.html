@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./ds-base.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>body{margin:0;animation:pageIn .25s ease-out}@keyframes pageIn{from{opacity:0}to{opacity:1}}</style>
+</helmet>
+<header style="display:flex;align-items:center;gap:18px;padding:12px 24px;background:#1c1e2b;box-shadow:0 1px 0 rgba(233,233,237,0.08);margin-bottom:56px">
+<span style="font-size:15px;font-weight:500;font-family:Inter,sans-serif;color:#9184d9;margin-right:auto">Currículo Vivo</span>
+<div style="display:flex;gap:4px;padding:3px;border-radius:8px;background:#232532">
+<button class="btn btn-primary" style="font-size:12px;padding:4px 12px">PT-BR</button>
+<button class="btn btn-ghost" style="font-size:12px;padding:4px 12px">EN</button>
+</div>
+</header>
+<div style="max-width:1120px;margin:0 auto;padding:0 24px 112px">
+
+<header style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:56px;align-items:end;margin-bottom:72px">
+<div>
+<h1 style="font-size:52px;max-width:15ch;margin-bottom:20px;text-wrap:pretty">Atualizar o currículo deveria levar dez minutos.</h1>
+<p style="font-size:17px;max-width:52ch;opacity:.82;text-wrap:pretty">Suba o <code style="font-size:15px;color:#d2cefd">.docx</code> antigo, responda o que mudou desde a última versão, e receba de volta um currículo reescrito com métricas, revisado contra inconsistências de data e pronto para ATS — em português e em inglês, exportável em DOCX e PDF. Serve para qualquer área: tecnologia, marketing, saúde, financeiro, operações.</p>
+<button class="btn btn-primary" onClick="{{ start }}" style="font-size:15px;padding:11px 22px;margin-top:8px">Começar agora <i class="ph ph-arrow-right"></i></button>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-bottom:6px">
+<div style="display:flex;gap:10px;flex-wrap:wrap"><span class="tag tag-accent">PT-BR ⇄ EN</span><span class="tag tag-neutral">DOCX · PDF</span><span class="tag tag-outline">ATS-first</span></div>
+<p class="text-muted" style="font-size:13px;margin:0;max-width:34ch">Baixe as quatro versões de uma vez — dois idiomas, dois formatos — se preferir.</p>
+</div>
+</header>
+
+<section style="margin-bottom:88px">
+<h6 class="text-muted" style="margin-bottom:24px">O fluxo</h6>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+<div class="card elev-sm"><span class="card-kicker">01</span><span class="card-title">Importa</span><p class="card-body">Upload de DOCX ou PDF. O parser separa cabeçalho, experiências, formação e skills, e marca o que está sem número.</p></div>
+<div class="card elev-sm"><span class="card-kicker">02</span><span class="card-title">Atualiza</span><p class="card-body">Só o delta: nova formação, nova experiência, promoções e entregas recentes. Nada de reescrever o que já existe.</p></div>
+<div class="card elev-sm"><span class="card-kicker">03</span><span class="card-title">Revisa</span><p class="card-body">Preview com sugestões de métrica, checagem de datas sobrepostas e regras de ATS. Aceita uma a uma ou todas.</p></div>
+<div class="card elev-sm"><span class="card-kicker">04</span><span class="card-title">Exporta</span><p class="card-body">Mesmo conteúdo em dois idiomas, dois formatos, um modelo de coluna única que qualquer leitor automático entende.</p></div>
+</div>
+</section>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  navigate(url) {
+    document.body.style.transition = 'opacity .2s ease-in';
+    document.body.style.opacity = '0';
+    setTimeout(() => { window.location.href = url; }, 200);
+  }
+  renderVals() {
+    return { start: () => this.navigate('./CurriculoVivoApp.dc.html') };
+  }
+}
+</script>
+</body>
+</html>

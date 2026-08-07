@@ -1,0 +1,41 @@
+/* Aviso. Mesma forma da nota da etapa 02: cartão escuro, raio 8px. O tom é que muda. */
+
+.notice,
+.warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+}
+
+.notice {
+  background: var(--color-accent-900);
+}
+
+/*
+ * Atenção em âmbar. A borda existe aqui e não no aviso de falha porque o âmbar-900 é
+ * escuro o bastante para se perder no fundo da página; a linha é o que faz o cartão ter
+ * contorno sem precisar clarear o fundo até ofuscar o texto.
+ */
+.warning {
+  background: var(--color-warning-900);
+  border: 1px solid color-mix(in srgb, var(--color-warning-400) 28%, transparent);
+}
+
+.icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--color-accent-400);
+}
+
+.warning .icon {
+  color: var(--color-warning-400);
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

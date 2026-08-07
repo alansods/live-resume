@@ -1,0 +1,6 @@
+/* O design system Nocturne é a fonte da verdade do visual: cores, ramps, espaços,
+   raios, sombras e classes de componente vivem em claude-design/styles.css e são
+   consumidos daqui como custom properties. Nenhum hex é redefinido neste projeto —
+   para mudar um valor, mude lá. */
+@import "../claude-design/styles.css";
+@import "tailwindcss";

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Currículo Vivo — proposta" description="Proposta de design e protótipo do fluxo de atualização de currículo: importar, complementar, revisar sugestões e exportar" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>body{margin:0}</style>
+</helmet>
+<div style="max-width:1120px;margin:0 auto;padding:0 24px 112px">
+<nav class="nav" style="padding-left:0;padding-right:0;margin-bottom:56px">
+<span class="nav-brand">Currículo Vivo</span>
+<a href="../curriculo-vivo-app/CurriculoVivoApp.dc.html" style="font-size:13px">Aplicação</a>
+<a href="../curriculo-vivo-landing/CurriculoVivoLanding.dc.html" style="font-size:13px">Landing</a>
+<span class="text-muted" style="font-size:12px">Proposta · jul 2026</span>
+</nav>
+
+<header style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:56px;align-items:end;margin-bottom:72px">
+<div>
+<h6 style="color:#9184d9;margin-bottom:16px">Proposta de produto</h6>
+<h1 style="font-size:52px;max-width:15ch;margin-bottom:20px;text-wrap:pretty">Atualizar o currículo deveria levar dez minutos.</h1>
+<p style="font-size:17px;max-width:52ch;opacity:.82;text-wrap:pretty">Você sobe o <code style="font-size:15px;color:#d2cefd">.docx</code> antigo, responde o que mudou desde a última versão, e recebe de volta um currículo reescrito com métricas, revisado contra inconsistências de data e pronto para ATS — em português e em inglês, exportável em DOCX e PDF. Serve para qualquer área: tecnologia, marketing, saúde, financeiro, operações.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;padding-bottom:6px">
+<div style="display:flex;gap:10px;flex-wrap:wrap"><span class="tag tag-accent">PT-BR ⇄ EN</span><span class="tag tag-neutral">DOCX · PDF</span><span class="tag tag-outline">ATS-first</span></div>
+<p class="text-muted" style="font-size:13px;margin:0;max-width:34ch">O protótipo abaixo é clicável: percorra os três passos, aceite sugestões e troque o idioma.</p>
+</div>
+</header>
+
+<section style="margin-bottom:88px">
+<h6 class="text-muted" style="margin-bottom:24px">O fluxo</h6>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+<div class="card elev-sm"><span class="card-kicker">01</span><span class="card-title">Importa</span><p class="card-body">Upload de DOCX ou PDF. O parser separa cabeçalho, experiências, formação e skills, e marca o que está sem número.</p></div>
+<div class="card elev-sm"><span class="card-kicker">02</span><span class="card-title">Pergunta</span><p class="card-body">Só o delta: nova formação, nova experiência, promoções e entregas recentes. Nada de reescrever o que já existe.</p></div>
+<div class="card elev-sm"><span class="card-kicker">03</span><span class="card-title">Revisa</span><p class="card-body">Preview lado a lado com sugestões de métrica, checagem de datas sobrepostas e regras de ATS. Aceita uma a uma ou todas.</p></div>
+<div class="card elev-sm"><span class="card-kicker">04</span><span class="card-title">Exporta</span><p class="card-body">Mesmo conteúdo em dois idiomas, dois formatos — separados ou todos de uma vez —, num modelo de coluna única que qualquer leitor automático entende.</p></div>
+</div>
+</section>
+
+<section style="margin-bottom:88px">
+<div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px"><h6 class="text-muted" style="margin:0">Protótipo</h6><span class="text-muted" style="font-size:12px">{{ stepLabel }}</span></div>
+<div style="border-radius:14px;background:#232532;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.55);overflow:hidden">
+<div style="display:flex;align-items:center;gap:10px;padding:14px 20px;background:#1c1e2b">
+<span style="width:9px;height:9px;border-radius:50%;background:#9184d9"></span>
+<span style="font-size:13px;font-weight:500;margin-right:14px">Currículo Vivo</span>
+<button class="btn {{ tab1 }}" onClick="{{ go1 }}" style="font-size:12px;padding:5px 12px">1 · Importar</button>
+<button class="btn {{ tab2 }}" onClick="{{ go2 }}" style="font-size:12px;padding:5px 12px">2 · Complementar</button>
+<button class="btn {{ tab3 }}" onClick="{{ go3 }}" style="font-size:12px;padding:5px 12px">3 · Revisar e exportar</button>
+</div>
+
+<sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+<div style="padding:48px 56px 56px">
+<h3 style="margin-bottom:8px">Suba o currículo que você já tem</h3>
+<p class="text-muted" style="font-size:14px;margin-bottom:28px">DOCX, PDF ou colar texto. Nada é publicado — o arquivo é processado e descartado depois da exportação.</p>
+<div style="border:1px dashed #595d6c;border-radius:14px;padding:44px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:#1e2030">
+<i class="ph ph-file-arrow-up" style="font-size:34px;color:#9184d9"></i>
+<div style="font-size:15px">Arraste o arquivo aqui</div>
+<div class="text-muted" style="font-size:12px">ou</div>
+<button class="btn btn-primary" onClick="{{ doImport }}">Selecionar arquivo</button>
+</div>
+<sc-if value="{{ imported }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:#2b2741">
+<i class="ph ph-check-circle" style="font-size:18px;color:#b5abfc"></i>
+<span style="font-size:14px">curriculo_marina_2023.docx</span>
+<span class="text-muted" style="font-size:12px">· 2 páginas · lido em 1,8s</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+<div style="padding:14px;border-radius:8px;background:#1e2030"><div style="font-size:24px">3</div><div class="text-muted" style="font-size:12px">experiências</div></div>
+<div style="padding:14px;border-radius:8px;background:#1e2030"><div style="font-size:24px">1</div><div class="text-muted" style="font-size:12px">formação</div></div>
+<div style="padding:14px;border-radius:8px;background:#1e2030"><div style="font-size:24px">6</div><div class="text-muted" style="font-size:12px">bullets sem número</div></div>
+<div style="padding:14px;border-radius:8px;background:#1e2030"><div style="font-size:24px;color:#b5abfc">2</div><div class="text-muted" style="font-size:12px">datas conflitantes</div></div>
+</div>
+<div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onClick="{{ go2 }}">Continuar <i class="ph ph-arrow-right"></i></button></div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+<div style="padding:48px 56px 56px">
+<h3 style="margin-bottom:8px">O que mudou desde 2023?</h3>
+<p class="text-muted" style="font-size:14px;margin-bottom:28px">Escreva solto, com números quando tiver. O que já está no arquivo continua lá — aqui você só acrescenta.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">
+<div style="display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:8px;background:#1e2030">
+<div style="display:flex;align-items:center;gap:8px"><i class="ph ph-graduation-cap" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Nova formação ou certificação</span></div>
+<div class="field"><label>Curso</label><input class="input" value="Pós-graduação em Engenharia de Dados"></div>
+<div class="field"><label>Instituição</label><input class="input" value="Insper"></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Início</label><input class="input" value="02/2025"></div><div class="field" style="flex:1"><label>Conclusão</label><input class="input" value="06/2026"></div></div>
+<button class="btn btn-ghost" style="align-self:flex-start">+ Adicionar outra</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:8px;background:#1e2030">
+<div style="display:flex;align-items:center;gap:8px"><i class="ph ph-briefcase" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Nova experiência ou promoção</span></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Empresa</label><input class="input" value="Fintech Kobo"></div><div class="field" style="flex:1"><label>Cargo</label><input class="input" value="Tech Lead"></div></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Início</label><input class="input" value="01/2025"></div><div class="field" style="flex:1"><label>Fim</label><input class="input" value="atual"></div></div>
+<div class="field"><label>O que você entregou? (números ajudam)</label><textarea class="input" style="min-height:74px">Assumi a squad de pagamentos, 7 pessoas. Latência caiu bastante e a gente parou de ter incidente no fechamento do mês.</textarea></div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:14px;margin-top:22px;padding:12px 16px;border-radius:8px;background:#2b2741">
+<i class="ph ph-lightbulb" style="font-size:18px;color:#b5abfc"></i>
+<span style="font-size:13px">Sem número? Na próxima tela o app propõe a métrica provável e você confirma — nunca inventa dado sozinho.</span>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:28px">
+<button class="btn btn-secondary" onClick="{{ go1 }}"><i class="ph ph-arrow-left"></i> Voltar</button>
+<button class="btn btn-primary" onClick="{{ go3 }}">Gerar currículo atualizado</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#1e2030">
+<div style="display:flex;gap:6px;padding:3px;border-radius:8px;background:#232532">
+<button class="btn {{ langPt }}" onClick="{{ setPt }}" style="font-size:12px;padding:4px 12px">PT-BR</button>
+<button class="btn {{ langEn }}" onClick="{{ setEn }}" style="font-size:12px;padding:4px 12px">English</button>
+</div>
+<span class="text-muted" style="font-size:12px;margin-right:auto">{{ langNote }}</span>
+<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px"><i class="ph ph-file-doc"></i> DOCX</button>
+<button class="btn btn-secondary" style="font-size:12px;padding:5px 12px"><i class="ph ph-file-pdf"></i> PDF</button>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
+<div style="padding:28px;background:#1a1c29">
+<div style="background:#f3f5fe;color:#292b31;padding:40px 44px;border-radius:4px;font-size:12.5px;line-height:1.5">
+<div style="font-size:22px;font-weight:600;letter-spacing:-0.01em">{{ r.name }}</div>
+<div style="font-size:13px;margin-top:2px">{{ r.role }}</div>
+<div style="font-size:11px;color:#595d6c;margin-top:6px">{{ r.contact }}</div>
+<div style="height:1px;background:#cfd3e5;margin:18px 0"></div>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin-bottom:6px">{{ t.summary }}</div>
+<p style="margin:0 0 18px">{{ r.summary }}</p>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin-bottom:8px">{{ t.experience }}</div>
+<sc-for list="{{ r.jobs }}" as="job" hint-placeholder-count="3">
+<div style="margin-bottom:14px">
+<div style="display:flex;justify-content:space-between;gap:16px"><span style="font-weight:600">{{ job.role }} — {{ job.company }}</span><span style="color:#595d6c;white-space:nowrap">{{ job.period }}</span></div>
+<ul style="margin:5px 0 0;padding-left:16px">
+<sc-for list="{{ job.bullets }}" as="b" hint-placeholder-count="2">
+<li style="margin-bottom:3px">{{ b.text }}<sc-if value="{{ b.updated }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#796cbf;margin-left:6px">atualizado</span></sc-if></li>
+</sc-for>
+</ul>
+</div>
+</sc-for>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin:16px 0 8px">{{ t.education }}</div>
+<sc-for list="{{ r.education }}" as="ed" hint-placeholder-count="2">
+<div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:4px"><span>{{ ed.course }} — {{ ed.school }}</span><span style="color:#595d6c;white-space:nowrap">{{ ed.period }}</span></div>
+</sc-for>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin:16px 0 6px">{{ t.skills }}</div>
+<p style="margin:0">{{ r.skills }}</p>
+</div>
+</div>
+<div style="padding:24px 28px 32px;display:flex;flex-direction:column;gap:14px;border-left:1px solid rgba(233,233,237,0.16)">
+<div style="display:flex;align-items:baseline;gap:10px">
+<h4 style="margin:0">Sugestões</h4>
+<span class="text-muted" style="font-size:12px;margin-right:auto">{{ openCount }}</span>
+<button class="btn btn-ghost" style="font-size:12px" onClick="{{ acceptAll }}">Aplicar todas</button>
+</div>
+<sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="5">
+<div style="padding:14px;border-radius:8px;background:#1e2030;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><span class="tag {{ s.tagClass }}">{{ s.kind }}</span><span class="text-muted" style="font-size:11px">{{ s.where }}</span></div>
+<div style="font-size:14px;font-weight:500">{{ s.title }}</div>
+<div style="font-size:12.5px;line-height:1.45;color:#b2b6ca;text-decoration:line-through;text-decoration-color:#75798c">{{ s.before }}</div>
+<div style="font-size:12.5px;line-height:1.45;color:#d2cefd">{{ s.after }}</div>
+<p class="text-muted" style="font-size:11.5px;margin:0">{{ s.why }}</p>
+<sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#b5abfc"><i class="ph ph-check"></i> Aplicado <button class="btn btn-ghost" style="font-size:11px;margin-left:auto" onClick="{{ s.undo }}">Desfazer</button></div>
+</sc-if>
+<sc-if value="{{ s.open }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px"><button class="btn btn-primary" style="font-size:12px;padding:4px 12px" onClick="{{ s.accept }}">{{ s.cta }}</button><button class="btn btn-secondary" style="font-size:12px;padding:4px 12px" onClick="{{ s.dismiss }}">Ignorar</button></div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+</section>
+
+<section style="margin-bottom:88px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:56px">
+<div>
+<h6 class="text-muted" style="margin-bottom:16px">Por que o modelo é simples</h6>
+<h3 style="max-width:20ch;margin-bottom:14px">Um leitor automático não enxerga design.</h3>
+<p style="font-size:14px;opacity:.8;max-width:44ch;text-wrap:pretty">O documento exportado é uma coluna, sem tabela, sem caixa de texto, sem ícone e sem gráfico de proficiência. A hierarquia vem de tamanho e espaço — a mesma decisão do resto do sistema.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">Coluna única, sem cabeçalho em tabela</div>
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">Títulos padrão: Experiência, Formação, Habilidades</div>
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">Datas sempre <span style="color:#d2cefd">mm/aaaa</span>, mesma ordem em todo o doc</div>
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">PDF com texto selecionável, nunca imagem</div>
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">Uma fonte, dois pesos, sem barra de skill</div>
+<div style="padding:14px 16px;border-radius:8px;background:#1e2030;font-size:13px">Arquivo nomeado <span style="color:#d2cefd">nome-cargo-2026.pdf</span></div>
+</div>
+</section>
+
+<section>
+<h6 class="text-muted" style="margin-bottom:24px">Idiomas e exportação</h6>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+<div class="card elev-sm"><span class="card-kicker">Tradução</span><span class="card-title">Duas versões, um conteúdo</span><p class="card-body">PT-BR e EN vivem no mesmo documento. Editar um bullet marca o par como desatualizado em vez de traduzir por cima.</p></div>
+<div class="card elev-sm"><span class="card-kicker">Cargos</span><span class="card-title">Títulos por mercado</span><p class="card-body">"Pleno" vira "Mid-level", "Analista de Sistemas Sênior" vira o equivalente que o recrutador de fora busca.</p></div>
+<div class="card elev-sm"><span class="card-kicker">Saída</span><span class="card-title">DOCX e PDF do mesmo modelo</span><p class="card-body">O DOCX usa estilos nativos de parágrafo, então qualquer pessoa consegue ajustar depois sem quebrar a estrutura. Um clique baixa as quatro versões juntas — PT-BR e inglês, DOCX e PDF, em .zip.</p></div>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;pt&quot;,&quot;en&quot;],&quot;default&quot;:&quot;pt&quot;,&quot;tsType&quot;:&quot;'pt'|'en'&quot;,&quot;section&quot;:&quot;Protótipo&quot;}}">
+const T = {
+  pt: { summary: 'Resumo', experience: 'Experiência profissional', education: 'Formação', skills: 'Habilidades' },
+  en: { summary: 'Summary', experience: 'Professional experience', education: 'Education', skills: 'Skills' }
+};
+
+const BASE = {
+  name: 'Marina Alves',
+  role: { pt: 'Engenheira de Software Back-end · Sênior', en: 'Senior Backend Software Engineer' },
+  contact: 'marina.alves@dev.br · +55 11 98212-4470 · São Paulo, BR · github.com/marinaalves',
+  summary: {
+    pt: 'Profissional proativa, apaixonada por tecnologia e com facilidade para trabalhar em equipe. Busco novos desafios em uma empresa inovadora.',
+    en: 'Proactive professional, passionate about technology and a good team player. Looking for new challenges at an innovative company.'
+  },
+  jobs: [
+    { company: 'Fintech Kobo', role: { pt: 'Tech Lead', en: 'Tech Lead' }, period: { pt: '01/2025 – atual', en: '01/2025 – Present' }, bullets: [
+      { pt: 'Assumi a squad de pagamentos com 7 pessoas; latência caiu bastante e paramos de ter incidente no fechamento do mês.', en: 'Took over the payments squad of 7; latency dropped a lot and month-end incidents stopped.' },
+      { pt: 'Defini o processo de on-call e o padrão de code review do time.', en: 'Defined the team on-call process and code-review standard.' }
+    ]},
+    { company: 'Fintech Kobo', role: { pt: 'Engenheira de Software Sênior', en: 'Senior Software Engineer' }, period: { pt: '03/2022 – 12/2024', en: '03/2022 – 12/2024' }, bullets: [
+      { pt: 'Responsável pela API de pagamentos e por melhorias de performance.', en: 'Responsible for the payments API and performance improvements.' },
+      { pt: 'Liderei a migração do monólito para 9 serviços com um grupo de 6 pessoas, sem downtime na virada.', en: 'Led the monolith-to-9-services migration with a group of 6, with zero downtime at cutover.' },
+      { pt: 'Reduzi o custo de infraestrutura em R$ 1,2M/ano com rightsizing e cache de consultas.', en: 'Cut infrastructure cost by BRL 1.2M/year through rightsizing and query caching.' }
+    ]},
+    { company: 'Banco Órion', role: { pt: 'Engenheira de Software Pleno', en: 'Mid-level Software Engineer' }, period: { pt: '01/2020 – 12/2022', en: '01/2020 – 12/2022' }, bullets: [
+      { pt: 'Desenvolvi microsserviços de antifraude em Python, avaliando 4M de transações por dia.', en: 'Built Python anti-fraud microservices scoring 4M transactions a day.' },
+      { pt: 'Trabalhei com testes automatizados e code review.', en: 'Worked with automated testing and code review.' }
+    ]},
+    { company: 'Agência Vetor', role: { pt: 'Desenvolvedora Júnior', en: 'Junior Developer' }, period: { pt: '2018 - 2019', en: '2018 - 2019' }, bullets: [
+      { pt: 'Entreguei 14 sites institucionais em Node.js e PostgreSQL, com prazo médio de 3 semanas.', en: 'Shipped 14 corporate sites in Node.js and PostgreSQL, averaging 3 weeks each.' }
+    ]}
+  ],
+  education: [
+    { course: { pt: 'Pós-graduação em Engenharia de Dados', en: 'Postgraduate, Data Engineering' }, school: 'Insper', period: { pt: '02/2025 – 06/2026', en: '02/2025 – 06/2026' } },
+    { course: { pt: 'Bacharelado em Ciência da Computação', en: 'BSc, Computer Science' }, school: 'Universidade Federal do ABC', period: { pt: '02/2015 – 12/2019', en: '02/2015 – 12/2019' } }
+  ],
+  skills: {
+    pt: 'Go ●●●●○ · Python ●●●●● · AWS ●●●○○ · SQL ●●●●○ · Docker ●●●○○ · Kafka ●●○○○',
+    en: 'Go ●●●●○ · Python ●●●●● · AWS ●●●○○ · SQL ●●●●○ · Docker ●●●○○ · Kafka ●●○○○'
+  }
+};
+
+const SUGGESTIONS = [
+  { id: 'm1', kind: 'Métrica', tagClass: 'tag-accent', where: 'Fintech Kobo · Tech Lead',
+    title: 'Bullet sem resultado mensurável', path: 'jobs.0.bullets.0', cta: 'Aplicar',
+    why: 'Os números vieram do que você escreveu no passo 2 e da versão anterior do currículo — confirme antes de aceitar.',
+    after: { pt: 'Lidero a squad de pagamentos (7 pessoas): p95 de 840ms para 190ms (-77%) e zero incidente no fechamento mensal em 14 ciclos.', en: 'Lead the 7-person payments squad: p95 from 840ms to 190ms (-77%) and zero month-end incidents across 14 cycles.' } },
+  { id: 'm2', kind: 'Métrica', tagClass: 'tag-accent', where: 'Banco Órion',
+    title: 'Verbo genérico, sem impacto', path: 'jobs.2.bullets.1', cta: 'Aplicar',
+    why: 'Troca "trabalhei com" por ação + resultado. Recrutador e ATS pontuam o número, não o esforço.',
+    after: { pt: 'Elevei a cobertura de testes de 34% para 82% em 6 meses, reduzindo incidentes em produção em 41%.', en: 'Raised test coverage from 34% to 82% in 6 months, cutting production incidents by 41%.' } },
+  { id: 'd1', kind: 'Datas', tagClass: 'tag-outline', where: 'Banco Órion ⇄ Fintech Kobo',
+    title: 'Períodos sobrepostos em 10 meses', path: 'jobs.2.period', cta: 'Corrigir data',
+    why: 'Você entrou na Kobo em 03/2022, mas o Banco Órion está até 12/2022. Se não foi trabalho paralelo, a saída provável é 02/2022.',
+    after: { pt: '01/2020 – 02/2022', en: '01/2020 – 02/2022' } },
+  { id: 'd2', kind: 'Datas', tagClass: 'tag-outline', where: 'Agência Vetor',
+    title: 'Formato de data fora do padrão', path: 'jobs.3.period', cta: 'Normalizar',
+    why: 'Todo o documento usa mm/aaaa. Anos soltos fazem o parser do ATS calcular tempo de experiência errado.',
+    after: { pt: '08/2018 – 12/2019', en: '08/2018 – 12/2019' } },
+  { id: 'a1', kind: 'ATS', tagClass: 'tag-neutral', where: 'Resumo',
+    title: 'Resumo sem palavra-chave técnica', path: 'summary', cta: 'Reescrever',
+    why: 'Adjetivos de personalidade não são indexados. O resumo passa a carregar stack, escala e um resultado.',
+    after: { pt: 'Engenheira back-end com 8 anos em plataformas de pagamento de alto volume (Go, Python, AWS). Reduzi latência p95 em 77% e custo de infraestrutura em R$ 1,2M/ano liderando squads de 4 a 7 pessoas.', en: 'Backend engineer with 8 years on high-volume payment platforms (Go, Python, AWS). Cut p95 latency by 77% and infrastructure cost by BRL 1.2M/year while leading squads of 4–7.' } },
+  { id: 'a2', kind: 'ATS', tagClass: 'tag-neutral', where: 'Habilidades',
+    title: 'Barras de proficiência não são lidas', path: 'skills', cta: 'Converter em texto',
+    why: 'Símbolos de nível somem no parser e ocupam linha. Lista separada por vírgula é indexada inteira.',
+    after: { pt: 'Go, Python, Java · PostgreSQL, Redis, Kafka · AWS (ECS, Lambda, RDS), Terraform, Docker, Kubernetes · gRPC, REST, DDD, TDD · Datadog, OpenTelemetry', en: 'Go, Python, Java · PostgreSQL, Redis, Kafka · AWS (ECS, Lambda, RDS), Terraform, Docker, Kubernetes · gRPC, REST, DDD, TDD · Datadog, OpenTelemetry' } }
+];
+
+class Component extends DCLogic {
+  state = { step: 1, imported: false, lang: null, done: {}, dismissed: {} };
+
+  get lang() { return this.state.lang || this.props.defaultLang || 'pt'; }
+
+  patched() {
+    const clone = JSON.parse(JSON.stringify(BASE));
+    for (const s of SUGGESTIONS) {
+      if (!this.state.done[s.id]) continue;
+      const keys = s.path.split('.');
+      let node = clone;
+      for (const k of keys) node = node[k];
+      Object.assign(node, s.after, { updated: true });
+    }
+    return clone;
+  }
+
+  renderVals() {
+    const lang = this.lang, step = this.state.step, r = this.patched();
+    const before = (path) => { let n = BASE; for (const k of path.split('.')) n = n[k]; return n[lang] || n.pt; };
+    const open = SUGGESTIONS.filter(s => !this.state.done[s.id] && !this.state.dismissed[s.id]).length;
+    return {
+      isStep1: step === 1, isStep2: step === 2, isStep3: step === 3,
+      stepLabel: step === 1 ? 'Passo 1 de 3 — importação' : step === 2 ? 'Passo 2 de 3 — o que mudou' : 'Passo 3 de 3 — revisão e exportação',
+      tab1: step === 1 ? 'btn-primary' : 'btn-secondary',
+      tab2: step === 2 ? 'btn-primary' : 'btn-secondary',
+      tab3: step === 3 ? 'btn-primary' : 'btn-secondary',
+      go1: () => this.setState({ step: 1 }), go2: () => this.setState({ step: 2 }), go3: () => this.setState({ step: 3 }),
+      imported: this.state.imported,
+      doImport: () => this.setState({ imported: true }),
+      langPt: lang === 'pt' ? 'btn-primary' : 'btn-ghost',
+      langEn: lang === 'en' ? 'btn-primary' : 'btn-ghost',
+      setPt: () => this.setState({ lang: 'pt' }), setEn: () => this.setState({ lang: 'en' }),
+      langNote: lang === 'pt' ? 'Versão em inglês sincronizada — 0 bullets pendentes' : 'Portuguese version in sync — 0 bullets pending',
+      t: T[lang],
+      openCount: open === 0 ? 'nenhuma pendente' : open + (open === 1 ? ' pendente' : ' pendentes'),
+      acceptAll: () => this.setState(st => {
+        const done = { ...st.done };
+        for (const s of SUGGESTIONS) if (!st.dismissed[s.id]) done[s.id] = true;
+        return { done };
+      }),
+      r: {
+        name: r.name, role: r.role[lang], contact: r.contact, summary: r.summary[lang], skills: r.skills[lang],
+        jobs: r.jobs.map(j => ({ company: j.company, role: j.role[lang], period: j.period[lang], bullets: j.bullets.map(b => ({ text: b[lang], updated: !!b.updated })) })),
+        education: r.education.map(e => ({ course: e.course[lang], school: e.school, period: e.period[lang] }))
+      },
+      suggestions: SUGGESTIONS.filter(s => !this.state.dismissed[s.id]).map(s => ({
+        kind: s.kind, tagClass: s.tagClass, where: s.where, title: s.title, why: s.why, cta: s.cta,
+        before: before(s.path), after: s.after[lang],
+        done: !!this.state.done[s.id], open: !this.state.done[s.id],
+        accept: () => this.setState(st => ({ done: { ...st.done, [s.id]: true } })),
+        undo: () => this.setState(st => { const d = { ...st.done }; delete d[s.id]; return { done: d }; }),
+        dismiss: () => this.setState(st => ({ dismissed: { ...st.dismissed, [s.id]: true } }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

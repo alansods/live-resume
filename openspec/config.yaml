@@ -1,0 +1,184 @@
+schema: spec-driven
+
+context: |
+  PRODUTO
+  Currículo Vivo: app web que atualiza currículos. Importar (DOCX/PDF -> modelo
+  canônico) -> Atualizar (formação, experiências, habilidades) -> Revisar (sugestões
+  de métrica, datas e ATS ancoradas ao trecho) -> Exportar (PT-BR/EN x DOCX/PDF,
+  individual ou .zip). Qualquer área profissional, não só tecnologia.
+
+  STACK
+  Next.js (App Router) + TypeScript strict + Tailwind CSS + Zod.
+  IA: camada própria em lib/ai com cadeia de provedores (Gemini -> Groq -> Cerebras),
+  todos atrás da interface AiProvider. Sempre saída estruturada validada por Zod na
+  volta. Gemini via @google/genai; Groq e Cerebras via SDK da OpenAI (APIs
+  compatíveis), compartilhando a mesma implementação. Chamada só a partir de route
+  handler no servidor; nenhuma chave chega ao cliente. Nada fora de lib/ai importa SDK
+  de provedor nem sabe qual IA respondeu.
+  Parse: mammoth (DOCX), pdfjs-dist (PDF). Geração: docx (estilos nativos de
+  parágrafo), @react-pdf/renderer (texto selecionável), jszip.
+  Testes: Vitest + Testing Library; Playwright no fluxo ponta a ponta. Testes nunca
+  chamam API de provedor nenhum: a fronteira do modelo é mockada com respostas
+  gravadas.
+  Sem banco, sem auth, sem armazenamento persistente.
+
+  PAPEL DA IA
+  A análise do currículo é feita pelo modelo: ler o currículo importado, sugerir
+  melhorias e correções (métrica, verbo, datas, ATS), definir a ORDEM do conteúdo e
+  traduzir na exportação. O app não tem heurística própria disputando com a IA; o
+  código valida a forma da resposta, ancora ao trecho e apresenta.
+  ONDE A IA PODE GERAR CONTEÚDO NOVO: apenas DENTRO DA SUGESTÃO. Uma sugestão de
+  melhoria pode propor texto que a IA escreveu, inclusive métrica ou resultado que
+  não constava do currículo importado — é isso que a torna uma sugestão.
+  ONDE NÃO PODE: no currículo. Conteúdo gerado pela IA NUNCA substitui o texto
+  original por conta própria. A substituição só acontece pelo checklist, com o
+  usuário marcando aquela sugestão — é ele quem julga se a proposta corresponde à
+  carreira dele.
+
+  CONVENÇÕES
+  app/ (rotas e route handlers), components/ui + components/<feature>,
+  lib/{resume,parsing,ai,suggestions,export,i18n}, types/, fixtures/.
+  Arquivos kebab-case, componentes PascalCase. Regra de negócio em lib/ (funções
+  puras), nunca em componente. Zod em toda fronteira. Nenhum `any`.
+  Strings da INTERFACE sempre via i18n (PT/EN), nunca fixas em componente. O i18n
+  cobre só o texto do app; nunca o conteúdo do currículo do usuário.
+  Cada requisito WHEN/THEN tem teste que o nomeia; export é testado reabrindo o
+  arquivo gerado.
+
+  DESIGN SYSTEM
+  claude-design/styles.css é a fonte da verdade (cores, ramps, espaços 2.8/5.6/8.4/
+  11.2/16.8/22.4px, raios 4/8/14px, sombras sm/md/lg) — consumir como CSS custom
+  properties, nunca redefinir hex em componente. Inter (headings weight 500),
+  Phosphor Icons (weight regular).
+  claude-design/README.md é o handoff (medidas, estados, comportamento).
+  Os arquivos *.dc.html são referência de aparência e comportamento: RECRIAR no
+  stack, NÃO copiar o HTML. Fidelidade alta — usar os hex, medidas, raios e sombras
+  do handoff.
+  Changes de UI referenciam também o .dc.html da tela; changes de backend, só o README.
+
+  RESTRIÇÕES DE PRODUTO (invioláveis)
+  - Nenhum código antes de proposta aprovada pelo usuário.
+  - NENHUM CONTEÚDO INVENTADO SUBSTITUI O ORIGINAL SEM O USUÁRIO MARCAR. Texto
+    gerado pela IA vive dentro da sugestão; entra no currículo só pelo checklist.
+    Essa marcação é a confirmação, e é a única.
+  - Todo trecho registra a sua origem — importado, digitado pelo usuário, ou
+    proposto pela IA e confirmado — para que conteúdo do usuário e conteúdo de
+    máquina sejam sempre distinguíveis.
+  - GERAR O CURRÍCULO É TAMBÉM REFORMATAR. A geração não só aplica as sugestões
+    marcadas: ela SEMPRE entrega o currículo no modelo padrão, qualquer que tenha
+    sido o layout do arquivo importado. O alvo é ser lido corretamente por ATS, por
+    IA de recrutador e por plataformas de candidatura.
+  - MODELO PADRÃO = COLUNA ÚNICA E SIMPLES: sem tabelas, sem caixas de texto, sem
+    barras de proficiência, sem cabeçalho/rodapé com conteúdo, sem ícone no lugar de
+    rótulo, sem coluna lateral. Seções com títulos convencionais, uma única fonte,
+    PDF com texto selecionável, nome de arquivo padronizado.
+  - O FORMATO DA DATA SEGUE O IDIOMA DA SAÍDA. Em português, mm/aaaa ("03/2022 –
+    12/2024", fim aberto "atual"). Em inglês, mês abreviado por extenso ("Mar 2022 –
+    Dec 2024", fim aberto "Present"), que é a convenção de currículo americano. O
+    modelo canônico continua guardando mês e ano estruturados; isto é renderização,
+    e acontece só na exportação.
+  - CURRÍCULO IMPORTADO EM DUAS OU MAIS COLUNAS É NORMALIZADO PELA IA para coluna
+    única, na ordem de leitura correta. Layout de múltiplas colunas é detectado na
+    importação e reflowed pela IA; nunca é entregue embaralhado nem descartado.
+  - Nenhuma feature de conta/login no escopo; arquivo descartado após exportação.
+  - SUGESTÃO É CHECKLIST, NÃO EDIÇÃO. Nada é aplicado ao currículo durante a
+    revisão: o preview mostra o CURRÍCULO IMPORTADO como está, com os marcadores
+    numerados indicando onde cada sugestão incide. O usuário MARCA as que quer, e o
+    currículo final é gerado a partir do conjunto marcado, na exportação.
+  - SEM ANTES E DEPOIS. Não existe diff, comparação lado a lado, trecho riscado no
+    papel do currículo nem modo "ver como vai ficar". O preview é o currículo
+    importado; o texto proposto aparece só dentro do cartão da sugestão.
+  - A ORDEM DO CONTEÚDO É DEFINIDA PELA IA NA HORA DA GERAÇÃO. O currículo em
+    revisão conserva a ordem do arquivo importado.
+  - NÃO EXISTE DESFAZER nem histórico de edição. Não é preciso: desmarcar uma
+    sugestão é a única reversão que existe, e ela acontece antes de qualquer geração.
+    Nenhum requisito, artefato ou UI pode introduzir aplicar/desfazer sobre o preview.
+  - O TOGGLE DE IDIOMA DA TOP BAR TRADUZ SÓ A INTERFACE. O conteúdo do currículo do
+    usuário nunca é traduzido em tela: ele existe num único idioma, o dele. Tradução
+    acontece EXCLUSIVAMENTE na exportação, e só se o usuário marcar essa saída.
+  - TODA DATA TEM MÊS E ANO (mm/aaaa). Data importada sem mês fica marcada como
+    incompleta. O usuário pode completá-la na etapa 02, e o app também ORGANIZA as
+    datas quando elas estão em conflito ou desorganizadas — propondo mês derivado das
+    datas vizinhas ou, quando não houver como derivar, um mês plausível.
+  - QUANDO O APP ORGANIZA DATAS, ELE AVISA. A revisão mostra um box dizendo que as
+    datas foram organizadas para o formato que os sistemas de recrutamento leem, que
+    não precisam ser exatamente as reais, e que cabe ao usuário conferir. Toda data
+    proposta que o app não conseguiu derivar do material do usuário é marcada como
+    tal, para o aviso ser específico e não genérico.
+  - O USUÁRIO NÃO ORDENA O CURRÍCULO. Não existe arrastar, subir/descer ou
+    ordenação manual em nenhuma etapa.
+  - A LANDING (CurriculoVivoLanding.dc.html) ESTÁ FORA DO ESCOPO, por decisão. A
+    porta de entrada do produto é a home, em `/`. A landing é a página de outro
+    produto: promete desfazer nas sugestões, "duas versões vivas" com par PT/EN
+    sincronizado no mesmo documento, e um bloco de preço com assinatura, histórico
+    de versões e currículo ajustado por vaga. As três primeiras contrariam
+    invariantes desta lista. Construí-la hoje exigiria remover metade do que ela
+    diz; ela volta a fazer sentido no dia em que o produto tiver assinatura e
+    histórico — e essa é a linha que muda primeiro se isso acontecer.
+  - A TRANSIÇÃO ENTRE PÁGINAS É SÓ DE ENTRADA. A página de destino anima a própria
+    entrada; não existe fade de saída antes de navegar. O fade do protótipo exigiria
+    interceptar o clique, e o caminho para o fluxo é um link de verdade — funciona
+    com clique do meio, nova aba e sem JavaScript. Toda animação de entrada respeita
+    `prefers-reduced-motion`.
+
+  ESTADO DA UI (handoff, seção "Estado necessário", já ajustado às regras acima)
+  step 1..4, imported, lang (só interface), selected (sugestões marcadas para entrar
+  no currículo final), dismissed, filter, focusedSug, hoverMark, hoverRight,
+  eduItems/jobItems/skillItems, nextId, modal, draft, exp{pt,en,pdf,docx}.
+  Derivados: mapa path -> sugestão, contagem de pendências, score de ATS projetado
+  sobre o conjunto marcado, rótulo do botão de download. O currículo do preview NÃO
+  é derivado das sugestões: ele é o currículo como está.
+  Os paths de trecho são a âncora entre currículo, marcador numerado e cartão de
+  sugestão. Como a IA define a ordem do conteúdo, os paths são por ID ESTÁVEL de
+  item, nunca por índice de posição. Definidos pela capability resume-model.
+
+  CAPABILITIES (uma change cada)
+  resume-model, resume-import, update-intake, suggestions-metrics,
+  suggestions-dates, suggestions-ats, content-organization, suggestion-review-ui,
+  export-translation, export-docx-pdf, app-shell-navigation, ai-providers.
+  Ordem: resume-model -> resume-import -> update-intake -> suggestions-* ->
+  content-organization -> suggestion-review-ui -> export-translation ->
+  export-docx-pdf, com app-shell-navigation como stub simples no começo e
+  acabamento no fim.
+
+  QUEM ESTRUTURA O CURRÍCULO É A IA, NÃO HEURÍSTICA.
+  A importação extrai o texto do arquivo em ordem de leitura correta e entrega ao
+  modelo, que preenche o modelo canônico. Não existe dicionário de títulos de seção
+  nem regra de "a primeira linha é a empresa": esse tipo de heurística sempre perde
+  para a variedade dos currículos reais.
+  TRAVA OBRIGATÓRIA: na estruturação a IA apenas DISTRIBUI o texto extraído nos
+  campos — nunca reescreve. Todo texto que ela devolve é verificado contra o texto
+  extraído do arquivo; o que não estiver lá é rejeitado. Reescrever é papel das
+  SUGESTÕES, que passam pelo checklist do usuário.
+  A fronteira do modelo nasce em resume-import, que é o primeiro uso de IA do projeto;
+  as changes de sugestão a reutilizam. A capability ai-providers a transformou numa
+  cadeia de provedores: quem chama pede à camada e não sabe qual IA atendeu; quando um
+  provedor não pode responder por motivo passageiro (cota, indisponibilidade, tempo
+  esgotado), o próximo da ordem responde no lugar. Falha definitiva — pedido inválido,
+  credencial recusada, resposta fora do formato — interrompe a cadeia na hora.
+  Acrescentar provedor é criar o arquivo, cumprir a interface e registrar no catálogo:
+  nada fora de lib/ai muda.
+
+rules:
+  proposal:
+    - Declare uma seção "Fora de escopo" explícita.
+    - Cite os arquivos de claude-design/ que servem de referência para a change.
+  specs:
+    - Todo requisito é um cenário verificável no formato WHEN … THEN ….
+    - Nenhum requisito pode permitir que conteúdo gerado pela IA substitua o texto
+      do currículo sem a marcação do usuário.
+  tasks:
+    - Cada task tem critério de aceite explícito e o teste correspondente.
+    - Tasks de UI têm critério de aceite visual comparado ao .dc.html da tela.
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

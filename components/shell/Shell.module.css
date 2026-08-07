@@ -1,0 +1,416 @@
+/* Shell, etapa 01 e etapa 04. Medidas do handoff; cores, dos tokens. */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── Stepper ─────────────────────────────────────────────────────────────── */
+
+/*
+ * As quatro etapas em linha, no topo do conteúdo.
+ *
+ * Era uma coluna lateral de 236px, que tirava largura de todas as etapas para mostrar
+ * quatro palavras. Em linha o stepper custa uma faixa de altura e devolve a página
+ * inteira ao conteúdo — e o percurso passa a ser lido da esquerda para a direita, que é o
+ * sentido em que ele acontece.
+ *
+ * Sem fundo, sem borda e sem sombra: ele flutua sobre a página. Um container em volta o
+ * transformaria numa segunda barra logo abaixo da top bar.
+ */
+.stepper {
+  padding: 22px 48px 0;
+}
+
+/*
+ * A régua interna é a da coluna comum das etapas MAIS os 7px de recuo lateral do primeiro
+ * e do último botão. Sem essa folga o círculo do passo 01 e a última letra do passo 04
+ * ficariam 7px para dentro das bordas do conteúdo logo abaixo — que é justamente o
+ * alinhamento que o stepper horizontal existe para mostrar.
+ */
+.stepperRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: calc(920px - 2 * 48px + 2 * 7px);
+  margin: 0 auto;
+}
+
+.step {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  flex: none;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.22s ease;
+}
+
+.step:hover:not(:disabled) {
+  background: var(--color-card);
+}
+
+.step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.circle,
+.circleOn,
+.circleDone {
+  display: inline-grid;
+  place-items: center;
+  width: 27px;
+  height: 27px;
+  flex: none;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+/* Pendente: contorno neutro — presente, mas sem reivindicar atenção. */
+.circle {
+  border: 1px solid var(--color-neutral-800);
+  color: var(--color-neutral-600);
+}
+
+/* Atual: contorno no accent, o único ponto do stepper que usa a cor da marca. */
+.circleOn {
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Cumprida: check preenchido — a única forma sólida da linha. */
+.circleDone {
+  background: var(--color-success);
+  color: var(--color-bg);
+}
+
+/*
+ * O número faz parte do rótulo ("1. Importar"), não de um elemento próprio: com cor e
+ * tamanho separados ele competia com a palavra que nomeia a etapa. Aqui só a cor do
+ * conjunto muda com o estado.
+ */
+.stepLabel,
+.stepLabelDone,
+.stepLabelOn {
+  font-size: 13px;
+}
+
+.stepLabel {
+  color: var(--color-neutral-600);
+}
+
+.stepLabelDone {
+  color: var(--color-neutral-400);
+}
+
+.stepLabelOn {
+  color: var(--color-text);
+}
+
+/*
+ * Os conectores são `flex: 1`: são eles que absorvem a sobra da régua e distribuem os
+ * quatro passos por ela. O `min-width` garante que continuem legíveis como linha quando a
+ * janela aperta.
+ */
+/*
+ * Com o botão em coluna, o centro vertical da linha desceu: fixar o conector na altura
+ * dos círculos é o que impede que ele atravesse os rótulos. 19px = metade do círculo de
+ * 27px mais os 6px de recuo superior do botão.
+ */
+.link,
+.linkDone {
+  flex: 1;
+  height: 1px;
+  min-width: 14px;
+  margin: 19px 4px 0;
+  align-self: flex-start;
+}
+
+.link {
+  background: var(--color-neutral-800);
+}
+
+.linkDone {
+  background: var(--color-success);
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+  min-width: 0;
+}
+
+/*
+ * O rodapé acompanha a coluna, e a régua dele casa com a largura do CONTEÚDO — 920 menos
+ * os 48px de recuo de cada lado. Sem isso a linha atravessaria 96px além do texto que ela
+ * deveria estar fechando.
+ */
+.stepNav {
+  display: flex;
+  gap: var(--space-3);
+  max-width: calc(920px - 2 * 48px);
+  margin: 36px auto 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.navBack,
+.navNext {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.navBack {
+  background: transparent;
+  border: 1px solid var(--color-neutral-700);
+  color: inherit;
+}
+
+.navNext {
+  margin-left: auto;
+  border: 0;
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+}
+
+.navBack:disabled,
+.navNext:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Etapas 01 e 04 ──────────────────────────────────────────────────────── */
+
+/*
+ * A coluna de conteúdo de TODAS as etapas — definida uma vez, importada por todas.
+ *
+ * Cada etapa tinha a sua: 720px aqui, 920px na 02, nenhuma largura na 03, 620px nas telas
+ * de progresso e conclusão, e nenhuma delas centralizada. Trocar de etapa mexia a coluna
+ * de lugar e de tamanho, no meio de um fluxo que é uma coisa só. A medida mora aqui e as
+ * etapas compõem — o mesmo arranjo de `btn` e `input`, pelo mesmo motivo.
+ */
+.stepColumn {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 34px 48px 56px;
+  animation: stepIn 0.22s ease-out;
+}
+
+.kicker {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  margin: 0 0 var(--space-2);
+}
+
+.title {
+  font-size: 32px;
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.82;
+  margin: 0 0 var(--space-8);
+}
+
+/* O box de espera respeita a coluna da etapa em que aparece. */
+.waiting {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 48px 22px;
+}
+
+/*
+ * Aviso que aparece DENTRO de uma etapa que já tem coluna própria (`.stepColumn`), e não
+ * no lugar dela.
+ *
+ * Reaproveitar `.waiting` aqui somava os dois recuos laterais — o aviso saía 48px mais
+ * para dentro que a dropzone logo acima — e, sem margem no topo, encostava nela. A coluna
+ * já dá o recuo; o que falta é só descolar do que vem antes.
+ */
+.stepNotice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+/*
+ * Sem `align-items` no container: o aviso estica para a largura da coluna, igual ao bloco
+ * que vem acima dele. Com `flex-start` — que era o valor aqui — a caixa encolhia até o
+ * tamanho do próprio texto e terminava numa borda direita que não coincidia com a da
+ * dropzone. Só o botão de "tentar de novo" encolhe, e ele pede isso por conta própria.
+ */
+.stepNotice > button {
+  align-self: flex-start;
+}
+
+.dropzone,
+.dropzoneOver {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 44px;
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-neutral-700);
+  background: var(--color-card);
+  text-align: center;
+}
+
+.dropzoneOver {
+  border-color: var(--color-accent);
+  background: var(--color-accent-900);
+}
+
+.dropText {
+  font-size: 15px;
+  margin: 0;
+}
+
+/* Ícone da dropzone: 34px, accent — a medida do handoff. */
+.dropIcon {
+  color: var(--color-accent);
+}
+
+/* A confirmação usa o accent claro, como no protótipo. */
+.checkIcon {
+  flex-shrink: 0;
+  color: var(--color-accent-400);
+}
+
+.dropOr {
+  font-size: 12px;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.dropButton {
+  font-size: 13px;
+  padding: var(--space-3) var(--space-6);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  cursor: pointer;
+}
+
+/* Visível para leitor de tela e para o teste; o botão é a porta visual. */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.imported {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  background: var(--color-accent-900);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-top: var(--space-6);
+  font-size: 13px;
+}
+
+.error,
+.warning {
+  margin-top: var(--space-4);
+  font-size: 13px;
+}
+
+.error {
+  color: var(--color-accent-300);
+}
+
+.warning {
+  color: var(--color-accent-400);
+}
+
+.group {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-6);
+}
+
+.groupLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+}
+
+.checkbox {
+  /* Forma e estados vêm do primitivo; aqui só o encaixe na lista da etapa 04. */
+  display: flex;
+  font-size: 14px;
+  margin-bottom: var(--space-2);
+}
+
+.download {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 15px;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  cursor: pointer;
+}
+
+.download:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.note {
+  font-size: 12px;
+  opacity: 0.7;
+  margin: var(--space-3) 0 0;
+}
+
+.guarantees {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-divider);
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Mesma regra da etapa 02: a animação de entrada é desligável. */
+@media (prefers-reduced-motion: reduce) {
+  .stepColumn {
+    animation: none;
+  }
+}

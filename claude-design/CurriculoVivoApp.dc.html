@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Currículo Vivo — aplicação" description="Interface da aplicação: importar currículo, complementar o que mudou, revisar sugestões de métrica e data, exportar em PT/EN, DOCX/PDF" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>body{margin:0;min-height:100vh}@keyframes modalFade{from{opacity:0}to{opacity:1}}@keyframes modalPop{from{opacity:0;transform:scale(.94) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}@keyframes stepIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#161826">
+<header style="display:flex;align-items:center;gap:18px;padding:12px 24px;background:#1c1e2b;box-shadow:0 1px 0 rgba(233,233,237,0.08)">
+<a href="./CurriculoVivoHome.dc.html" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#b2b6ca;text-decoration:none"><i class="ph ph-arrow-left"></i> Voltar</a>
+<span style="width:1px;height:18px;background:rgba(233,233,237,0.14)"></span>
+<span style="font-size:15px;font-weight:500;font-family:Inter,sans-serif;color:#9184d9;margin-right:auto">Currículo Vivo</span>
+<div style="display:flex;gap:4px;padding:3px;border-radius:8px;background:#232532;position:relative">
+<span style="position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:6px;background:#796cbf;transition:transform .22s ease;transform:translateX({{ langOffset }})"></span>
+<button class="btn {{ langPt }}" onClick="{{ setPt }}" style="font-size:12px;padding:4px 12px;position:relative;background:transparent;transition:color .15s">PT-BR</button>
+<button class="btn {{ langEn }}" onClick="{{ setEn }}" style="font-size:12px;padding:4px 12px;position:relative;background:transparent;transition:color .15s">EN</button>
+</div>
+</header>
+
+<div style="display:flex;flex:1;min-height:0">
+<aside style="width:236px;flex:none;padding:24px 18px;border-right:1px solid rgba(233,233,237,0.10);display:flex;flex-direction:column;gap:6px">
+<h6 class="text-muted" style="margin:0 8px 14px">Etapas · 4 passos</h6>
+<button class="btn {{ nav1 }}" onClick="{{ go1 }}" style="justify-content:flex-start;gap:10px;padding:9px 10px;width:100%"><span style="font-size:11px;width:16px;flex:none;text-align:left;opacity:.6">01</span> Importar</button>
+<button class="btn {{ nav2 }}" onClick="{{ go2 }}" style="justify-content:flex-start;gap:10px;padding:9px 10px;width:100%"><span style="font-size:11px;width:16px;flex:none;text-align:left;opacity:.6">02</span> Atualizar</button>
+<button class="btn {{ nav3 }}" onClick="{{ go3 }}" style="justify-content:flex-start;gap:10px;padding:9px 10px;width:100%"><span style="font-size:11px;width:16px;flex:none;text-align:left;opacity:.6">03</span> Revisar</button>
+<button class="btn {{ nav4 }}" onClick="{{ go4 }}" style="justify-content:flex-start;gap:10px;padding:9px 10px;width:100%"><span style="font-size:11px;width:16px;flex:none;text-align:left;opacity:.6">04</span> Exportar</button>
+<div style="margin-top:auto;padding:12px;border-radius:8px;background:#1e2030">
+<div class="text-muted" style="font-size:11px;margin-bottom:6px">Pontuação ATS</div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:26px;font-family:Inter,sans-serif">{{ score }}</span><span class="text-muted" style="font-size:12px">/ 100</span></div>
+<div style="display:flex;gap:3px;margin-top:8px">
+<sc-for list="{{ scoreBars }}" as="bar" hint-placeholder-count="10">
+<sc-if value="{{ bar.on }}" hint-placeholder-val="{{ true }}"><span style="flex:1;height:4px;border-radius:2px;background:#9184d9"></span></sc-if>
+<sc-if value="{{ bar.off }}" hint-placeholder-val="{{ false }}"><span style="flex:1;height:4px;border-radius:2px;background:#3f424d"></span></sc-if>
+</sc-for>
+</div>
+<div class="text-muted" style="font-size:11px;margin-top:8px">{{ scoreNote }}</div>
+</div>
+</aside>
+
+<main style="flex:1;min-width:0;overflow:auto">
+
+<sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:720px;padding:56px 48px;animation:stepIn .22s ease-out">
+<div class="text-muted" style="font-size:12px;letter-spacing:0.08em;margin-bottom:8px">PASSO 01 DE 04</div><h2 style="margin-bottom:8px">Importar currículo</h2>
+<p class="text-muted" style="font-size:14px;margin-bottom:32px">DOCX, PDF ou texto colado. O arquivo é processado e descartado depois da exportação.</p>
+<div style="border:1px dashed #595d6c;border-radius:14px;padding:52px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;background:#1c1e2b">
+<i class="ph ph-file-arrow-up" style="font-size:36px;color:#9184d9"></i>
+<div style="font-size:15px">Arraste o arquivo aqui</div>
+<div class="text-muted" style="font-size:12px">DOCX, PDF ou RTF · até 10 MB</div>
+<div style="display:flex;gap:10px;margin-top:6px"><button class="btn btn-primary" onClick="{{ doImport }}">Selecionar arquivo</button><button class="btn btn-secondary">Colar texto</button></div>
+</div>
+<sc-if value="{{ imported }}" hint-placeholder-val="{{ false }}">
+<div style="margin-top:26px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;background:#2b2741">
+<i class="ph ph-check-circle" style="font-size:18px;color:#b5abfc"></i>
+<span style="font-size:14px">curriculo_marina_2023.docx</span>
+<span class="text-muted" style="font-size:12px">· 2 páginas · lido em 1,8s</span>
+<button class="btn btn-ghost" style="font-size:12px;margin-left:auto">Trocar</button>
+</div>
+<div class="field" style="max-width:340px"><label>Área de atuação (calibra as sugestões)</label><input class="input" value="Tecnologia · Engenharia de Software"></div>
+</div>
+</sc-if>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:20px;border-top:1px solid rgba(233,233,237,0.10)">
+<button class="btn btn-secondary" onClick="{{ goPrev }}" disabled="{{ noPrev }}" style="font-size:13px"><i class="ph ph-arrow-left"></i> Voltar</button>
+<button class="btn btn-primary" onClick="{{ goNext }}" disabled="{{ noNext }}" style="font-size:13px;margin-left:auto">Avançar <i class="ph ph-arrow-right"></i></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+<div style="max-width:920px;padding:56px 48px;animation:stepIn .22s ease-out">
+<div class="text-muted" style="font-size:12px;letter-spacing:0.08em;margin-bottom:8px">PASSO 02 DE 04</div><h2 style="margin-bottom:8px">Atualizar</h2>
+<p class="text-muted" style="font-size:14px;margin-bottom:32px">Escreva solto, com números quando tiver. O que já está no arquivo continua lá.</p>
+<div style="display:flex;flex-direction:column;gap:26px">
+
+<section>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="ph ph-graduation-cap" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Formação e certificações</span><span class="text-muted" style="font-size:11px;margin-right:auto">{{ eduCount }}</span><button class="btn btn-secondary" onClick="{{ openEduModal }}"><i class="ph ph-plus"></i> Adicionar formação</button></div>
+<sc-for list="{{ eduItems }}" as="it" hint-placeholder-count="1">
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:8px;background:#1e2030;margin-bottom:10px">
+<div style="display:flex;gap:12px"><div class="field" style="flex:2"><label>Curso</label><input class="input" value="{{ it.course }}" onChange="{{ it.onCourse }}"></div><div class="field" style="flex:1"><label>Instituição</label><input class="input" value="{{ it.school }}" onChange="{{ it.onSchool }}"></div></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Início</label><input class="input" value="{{ it.start }}" onChange="{{ it.onStart }}"></div><div class="field" style="flex:1"><label>Conclusão</label><input class="input" value="{{ it.end }}" onChange="{{ it.onEnd }}"></div></div>
+<div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost" onClick="{{ it.remove }}" title="Remover" style="font-size:12px"><i class="ph ph-trash"></i> Remover</button></div>
+</div>
+</sc-for>
+<sc-if value="{{ noEdu }}" hint-placeholder-val="{{ false }}"><div class="text-muted" style="font-size:13px;padding:14px 0">Nenhuma formação nova. As do arquivo importado seguem no currículo.</div></sc-if>
+</section>
+
+<section>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="ph ph-briefcase" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Experiências e promoções</span><span class="text-muted" style="font-size:11px;margin-right:auto">{{ jobCount }}</span><button class="btn btn-secondary" onClick="{{ openJobModal }}"><i class="ph ph-plus"></i> Adicionar experiência</button></div>
+<sc-for list="{{ jobItems }}" as="it" hint-placeholder-count="1">
+<div style="display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:8px;background:#1e2030;margin-bottom:10px">
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Empresa</label><input class="input" value="{{ it.company }}" onChange="{{ it.onCompany }}"></div><div class="field" style="flex:1"><label>Cargo</label><input class="input" value="{{ it.role }}" onChange="{{ it.onRole }}"></div><div class="field" style="width:110px"><label>Início</label><input class="input" value="{{ it.start }}" onChange="{{ it.onStart }}"></div><div class="field" style="width:110px"><label>Fim</label><input class="input" value="{{ it.end }}" onChange="{{ it.onEnd }}"></div></div>
+<div class="field"><label>O que você entregou? (números ajudam)</label><textarea class="input" style="min-height:86px" value="{{ it.text }}" onChange="{{ it.onText }}"></textarea></div>
+<div style="display:flex;justify-content:flex-end"><button class="btn btn-ghost" onClick="{{ it.remove }}" title="Remover" style="font-size:12px"><i class="ph ph-trash"></i> Remover</button></div>
+</div>
+</sc-for>
+<sc-if value="{{ noJob }}" hint-placeholder-val="{{ false }}"><div class="text-muted" style="font-size:13px;padding:14px 0">Nenhuma experiência nova desde a última versão.</div></sc-if>
+</section>
+
+<section>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><i class="ph ph-code" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Novas habilidades</span><span class="text-muted" style="font-size:11px;margin-right:auto">{{ skillCount }}</span><button class="btn btn-secondary" onClick="{{ openSkillModal }}"><i class="ph ph-plus"></i> Adicionar habilidade</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
+<sc-for list="{{ skillItems }}" as="it" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:6px;padding:6px 6px 6px 10px;border-radius:8px;background:#1e2030"><input class="input" value="{{ it.name }}" onChange="{{ it.onName }}" style="width:170px;min-height:30px;background:transparent;border-color:transparent"><button class="btn btn-ghost" onClick="{{ it.remove }}" title="Remover" style="padding:2px 6px"><i class="ph ph-x"></i></button></div>
+</sc-for>
+</div>
+<sc-if value="{{ noSkill }}" hint-placeholder-val="{{ false }}"><div class="text-muted" style="font-size:13px;padding:14px 0">Nenhuma habilidade nova.</div></sc-if>
+</section>
+
+</div>
+
+<sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;background:rgba(10,10,16,0.6);display:flex;align-items:center;justify-content:center;z-index:50;animation:modalFade .16s ease-out" onClick="{{ closeModal }}">
+<div style="width:420px;max-width:90vw;padding:26px;border-radius:10px;background:#232532;box-shadow:0 0 0 1px #595d6c, 0 24px 60px rgba(0,0,0,0.6);display:flex;flex-direction:column;gap:16px;animation:modalPop .18s cubic-bezier(.2,.8,.2,1)" onClick="{{ stopProp }}">
+<h4 style="margin:0">{{ modalTitle }}</h4>
+<sc-if value="{{ isEduModal }}" hint-placeholder-val="{{ false }}">
+<div class="field"><label>Curso</label><input class="input" value="{{ draft.course }}" onChange="{{ draft.onCourse }}"></div>
+<div class="field"><label>Instituição</label><input class="input" value="{{ draft.school }}" onChange="{{ draft.onSchool }}"></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Início</label><input class="input" value="{{ draft.start }}" onChange="{{ draft.onStart }}"></div><div class="field" style="flex:1"><label>Conclusão</label><input class="input" value="{{ draft.end }}" onChange="{{ draft.onEnd }}"></div></div>
+</sc-if>
+<sc-if value="{{ isJobModal }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Empresa</label><input class="input" value="{{ draft.company }}" onChange="{{ draft.onCompany }}"></div><div class="field" style="flex:1"><label>Cargo</label><input class="input" value="{{ draft.role }}" onChange="{{ draft.onRole }}"></div></div>
+<div style="display:flex;gap:12px"><div class="field" style="flex:1"><label>Início</label><input class="input" value="{{ draft.start }}" onChange="{{ draft.onStart }}"></div><div class="field" style="flex:1"><label>Fim</label><input class="input" value="{{ draft.end }}" onChange="{{ draft.onEnd }}"></div></div>
+<div class="field"><label>O que você entregou? (números ajudam)</label><textarea class="input" style="min-height:86px" value="{{ draft.text }}" onChange="{{ draft.onText }}"></textarea></div>
+</sc-if>
+<sc-if value="{{ isSkillModal }}" hint-placeholder-val="{{ false }}">
+<div class="field"><label>Habilidade</label><input class="input" value="{{ draft.name }}" onChange="{{ draft.onName }}"></div>
+</sc-if>
+<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+<button class="btn btn-secondary" onClick="{{ closeModal }}">Cancelar</button>
+<button class="btn btn-primary" onClick="{{ submitModal }}">Adicionar</button>
+</div>
+</div>
+</div>
+</sc-if>
+<div style="display:flex;align-items:center;gap:14px;margin-top:22px;padding:12px 16px;border-radius:8px;background:#2b2741">
+<i class="ph ph-lightbulb" style="font-size:18px;color:#b5abfc"></i>
+<span style="font-size:13px">Sem número? Na próxima etapa o app propõe a métrica provável e você confirma — nunca inventa dado sozinho.</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:20px;border-top:1px solid rgba(233,233,237,0.10)">
+<button class="btn btn-secondary" onClick="{{ goPrev }}" disabled="{{ noPrev }}" style="font-size:13px"><i class="ph ph-arrow-left"></i> Voltar</button>
+<button class="btn btn-primary" onClick="{{ goNext }}" disabled="{{ noNext }}" style="font-size:13px;margin-left:auto">Avançar <i class="ph ph-arrow-right"></i></button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+<div style="animation:stepIn .22s ease-out">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));align-items:start">
+<div style="padding:28px 32px 56px">
+<div class="text-muted" style="font-size:12px;letter-spacing:0.08em;margin-bottom:8px">PASSO 03 DE 04</div>
+<h2 style="margin-bottom:8px">Revisar sugestões</h2>
+<p class="text-muted" style="font-size:14px;margin-bottom:24px">Cada sugestão mostra o texto atual e o proposto. Aceite uma a uma ou todas — sempre com desfazer.</p>
+<div style="background:#f3f5fe;color:#292b31;padding:44px 48px;border-radius:4px;font-size:12.5px;line-height:1.5;box-shadow:0 16px 40px rgba(0,0,0,0.45);min-width:460px;max-width:760px">
+<div style="font-size:23px;font-weight:600;letter-spacing:-0.01em">{{ r.name }}</div>
+<div style="font-size:13px;margin-top:2px">{{ r.role }}</div>
+<div style="font-size:11px;color:#595d6c;margin-top:6px">{{ r.contact }}</div>
+<div style="height:1px;background:#cfd3e5;margin:18px 0"></div>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin-bottom:6px">{{ t.summary }}</div>
+<p style="margin:0 0 18px">{{ r.summary }}<sc-if value="{{ r.summaryM.hasMark }}" hint-placeholder-val="{{ false }}"><span onMouseEnter="{{ r.summaryM.mark.enter }}" onMouseLeave="{{ r.summaryM.mark.leave }}" style="position:relative;display:inline-block;vertical-align:super;margin-left:4px;line-height:1"><span onClick="{{ r.summaryM.mark.detail }}" style="display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#796cbf;color:#f5f4ff;font-size:9px;font-weight:600;cursor:pointer">{{ r.summaryM.mark.num }}</span><sc-if value="{{ r.summaryM.mark.showLeft }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ r.summaryM.mark.kind }} · sugestão {{ r.summaryM.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ r.summaryM.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ r.summaryM.mark.after }}</span><button class="btn btn-primary" onClick="{{ r.summaryM.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if><sc-if value="{{ r.summaryM.mark.showRight }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ r.summaryM.mark.kind }} · sugestão {{ r.summaryM.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ r.summaryM.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ r.summaryM.mark.after }}</span><button class="btn btn-primary" onClick="{{ r.summaryM.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if></span></sc-if></p>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin-bottom:8px">{{ t.experience }}</div>
+<sc-for list="{{ r.jobs }}" as="job" hint-placeholder-count="4">
+<div style="margin-bottom:14px">
+<div style="display:flex;justify-content:space-between;gap:16px"><span style="font-weight:600">{{ job.role }} — {{ job.company }}</span><span style="color:#595d6c;white-space:nowrap">{{ job.period }}<sc-if value="{{ job.hasMark }}" hint-placeholder-val="{{ false }}"><span onMouseEnter="{{ job.mark.enter }}" onMouseLeave="{{ job.mark.leave }}" style="position:relative;display:inline-block;vertical-align:super;margin-left:4px;line-height:1"><span onClick="{{ job.mark.detail }}" style="display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#796cbf;color:#f5f4ff;font-size:9px;font-weight:600;cursor:pointer">{{ job.mark.num }}</span><sc-if value="{{ job.mark.showLeft }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ job.mark.kind }} · sugestão {{ job.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ job.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ job.mark.after }}</span><button class="btn btn-primary" onClick="{{ job.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if><sc-if value="{{ job.mark.showRight }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ job.mark.kind }} · sugestão {{ job.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ job.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ job.mark.after }}</span><button class="btn btn-primary" onClick="{{ job.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if></span></sc-if></span></div>
+<ul style="margin:5px 0 0;padding-left:16px">
+<sc-for list="{{ job.bullets }}" as="b" hint-placeholder-count="2">
+<li style="margin-bottom:3px">{{ b.text }}<sc-if value="{{ b.hasMark }}" hint-placeholder-val="{{ false }}"><span onMouseEnter="{{ b.mark.enter }}" onMouseLeave="{{ b.mark.leave }}" style="position:relative;display:inline-block;vertical-align:super;margin-left:4px;line-height:1"><span onClick="{{ b.mark.detail }}" style="display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#796cbf;color:#f5f4ff;font-size:9px;font-weight:600;cursor:pointer">{{ b.mark.num }}</span><sc-if value="{{ b.mark.showLeft }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ b.mark.kind }} · sugestão {{ b.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ b.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ b.mark.after }}</span><button class="btn btn-primary" onClick="{{ b.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if><sc-if value="{{ b.mark.showRight }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ b.mark.kind }} · sugestão {{ b.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ b.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ b.mark.after }}</span><button class="btn btn-primary" onClick="{{ b.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if></span></sc-if><sc-if value="{{ b.updated }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:#796cbf;margin-left:6px">atualizado</span></sc-if></li>
+</sc-for>
+</ul>
+</div>
+</sc-for>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin:16px 0 8px">{{ t.education }}</div>
+<sc-for list="{{ r.education }}" as="ed" hint-placeholder-count="2">
+<div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:4px"><span>{{ ed.course }} — {{ ed.school }}</span><span style="color:#595d6c;white-space:nowrap">{{ ed.period }}</span></div>
+</sc-for>
+<div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#595d6c;margin:16px 0 6px">{{ t.skills }}</div>
+<p style="margin:0">{{ r.skills }}<sc-if value="{{ r.skillsM.hasMark }}" hint-placeholder-val="{{ false }}"><span onMouseEnter="{{ r.skillsM.mark.enter }}" onMouseLeave="{{ r.skillsM.mark.leave }}" style="position:relative;display:inline-block;vertical-align:super;margin-left:4px;line-height:1"><span onClick="{{ r.skillsM.mark.detail }}" style="display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:#796cbf;color:#f5f4ff;font-size:9px;font-weight:600;cursor:pointer">{{ r.skillsM.mark.num }}</span><sc-if value="{{ r.skillsM.mark.showLeft }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ r.skillsM.mark.kind }} · sugestão {{ r.skillsM.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ r.skillsM.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ r.skillsM.mark.after }}</span><button class="btn btn-primary" onClick="{{ r.skillsM.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if><sc-if value="{{ r.skillsM.mark.showRight }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:-8px;top:21px;z-index:20;display:block;width:290px;padding:11px 13px;border-radius:8px;background:#232532;color:#e9e9ed;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.65);font-size:11.5px;line-height:1.45;font-weight:400;text-align:left;white-space:normal"><span style="display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc;margin-bottom:4px">{{ r.skillsM.mark.kind }} · sugestão {{ r.skillsM.mark.num }}</span><span style="display:block;margin-bottom:6px">{{ r.skillsM.mark.title }}</span><span style="display:block;color:#d2cefd;margin-bottom:9px">{{ r.skillsM.mark.after }}</span><button class="btn btn-primary" onClick="{{ r.skillsM.mark.detail }}" style="font-size:11px;padding:3px 10px">Ver detalhes</button></span></sc-if></span></sc-if></p>
+</div>
+</div>
+<div style="padding:24px 28px 56px;display:flex;flex-direction:column;gap:14px;border-left:1px solid rgba(233,233,237,0.10)">
+<div style="display:flex;align-items:baseline;gap:10px">
+<h4 style="margin:0">Sugestões</h4><span class="text-muted" style="font-size:11px">os números aparecem no currículo</span>
+<span class="text-muted" style="font-size:12px;margin-right:auto">{{ openCount }}</span>
+<button class="btn btn-ghost" style="font-size:12px" onClick="{{ acceptAll }}">Aplicar todas</button>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<button class="btn {{ fAll }}" onClick="{{ filterAll }}" style="font-size:11px;padding:3px 10px">Todas</button>
+<button class="btn {{ fMet }}" onClick="{{ filterMet }}" style="font-size:11px;padding:3px 10px">Métrica</button>
+<button class="btn {{ fDat }}" onClick="{{ filterDat }}" style="font-size:11px;padding:3px 10px">Datas</button>
+<button class="btn {{ fAts }}" onClick="{{ filterAts }}" style="font-size:11px;padding:3px 10px">ATS</button>
+</div>
+<sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="6">
+<div id="sug-{{ s.num }}" style="padding:14px;border-radius:8px;background:#1e2030;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><span style="display:inline-grid;place-items:center;width:18px;height:18px;flex:none;border-radius:50%;background:#796cbf;color:#f5f4ff;font-size:10px;font-weight:600">{{ s.num }}</span><sc-if value="{{ s.focused }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#b5abfc">em foco</span></sc-if><span class="tag {{ s.tagClass }}">{{ s.kind }}</span><span class="text-muted" style="font-size:11px">{{ s.where }}</span></div>
+<div style="font-size:14px;font-weight:500">{{ s.title }}</div>
+<div style="font-size:12.5px;line-height:1.45;color:#b2b6ca;text-decoration:line-through;text-decoration-color:#75798c">{{ s.before }}</div>
+<div style="font-size:12.5px;line-height:1.45;color:#d2cefd">{{ s.after }}</div>
+<p class="text-muted" style="font-size:11.5px;margin:0">{{ s.why }}</p>
+<sc-if value="{{ s.done }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#b5abfc"><i class="ph ph-check"></i> Aplicado <button class="btn btn-ghost" style="font-size:11px;margin-left:auto" onClick="{{ s.undo }}">Desfazer</button></div>
+</sc-if>
+<sc-if value="{{ s.open }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px"><button class="btn btn-primary" style="font-size:12px;padding:4px 12px" onClick="{{ s.accept }}">{{ s.cta }}</button><button class="btn btn-secondary" style="font-size:12px;padding:4px 12px" onClick="{{ s.dismiss }}">Ignorar</button></div>
+</sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ noneLeft }}" hint-placeholder-val="{{ false }}">
+<div style="padding:18px;border-radius:8px;background:#2b2741;font-size:13px">Nada pendente neste filtro. O currículo está pronto para exportar.</div>
+</sc-if>
+</div>
+</div>
+<div style="padding:0 32px 56px">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:20px;border-top:1px solid rgba(233,233,237,0.10)">
+<button class="btn btn-secondary" onClick="{{ goPrev }}" disabled="{{ noPrev }}" style="font-size:13px"><i class="ph ph-arrow-left"></i> Voltar</button>
+<button class="btn btn-primary" onClick="{{ goNext }}" disabled="{{ noNext }}" style="font-size:13px;margin-left:auto">Avançar <i class="ph ph-arrow-right"></i></button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+<div style="max-width:760px;padding:56px 48px;animation:stepIn .22s ease-out">
+<div class="text-muted" style="font-size:12px;letter-spacing:0.08em;margin-bottom:8px">PASSO 04 DE 04</div><h2 style="margin-bottom:8px">Exportar</h2>
+<p class="text-muted" style="font-size:14px;margin-bottom:32px">Mesmo conteúdo, dois idiomas, dois formatos. Modelo de coluna única, texto selecionável.</p>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:24px">
+<div style="padding:20px;border-radius:8px;background:#1e2030;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px"><i class="ph ph-translate" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Idiomas</span></div>
+<label class="radio"><input type="checkbox" checked="{{ expPt }}" onChange="{{ toggleExpPt }}"><span class="dot" style="border-radius:4px"></span>Português (BR)</label>
+<label class="radio"><input type="checkbox" checked="{{ expEn }}" onChange="{{ toggleExpEn }}"><span class="dot" style="border-radius:4px"></span>English</label>
+<span class="text-muted" style="font-size:11.5px">Dois arquivos por formato, nomeados por idioma.</span>
+</div>
+<div style="padding:20px;border-radius:8px;background:#1e2030;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px"><i class="ph ph-files" style="color:#9184d9"></i><span style="font-size:14px;font-weight:500">Formatos</span></div>
+<label class="radio"><input type="checkbox" checked="{{ expPdf }}" onChange="{{ toggleExpPdf }}"><span class="dot" style="border-radius:4px"></span>PDF (texto selecionável)</label>
+<label class="radio"><input type="checkbox" checked="{{ expDocx }}" onChange="{{ toggleExpDocx }}"><span class="dot" style="border-radius:4px"></span>DOCX (estilos nativos)</label>
+<span class="text-muted" style="font-size:11.5px">O DOCX abre editável no Word e no Google Docs.</span>
+</div>
+</div>
+<div class="field" style="max-width:420px;margin-bottom:24px"><label>Nome do arquivo</label><input class="input" value="marina-alves-tech-lead-2026"></div>
+<div style="display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:8px;background:#1c1e2b;margin-bottom:28px">
+<div style="display:flex;align-items:center;gap:8px;font-size:13px"><i class="ph ph-check" style="color:#b5abfc"></i> {{ appliedNote }}</div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px"><i class="ph ph-check" style="color:#b5abfc"></i> Datas normalizadas em mm/aaaa, sem sobreposição</div>
+<div style="display:flex;align-items:center;gap:8px;font-size:13px"><i class="ph ph-check" style="color:#b5abfc"></i> Coluna única, sem tabela, caixa de texto ou ícone</div>
+</div>
+<div style="display:flex;gap:10px;align-items:center"><button class="btn btn-primary"><i class="ph ph-download-simple"></i> {{ downloadLabel }}</button><span class="text-muted" style="font-size:12px">Um clique baixa todas as versões marcadas, em .zip</span></div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:36px;padding-top:20px;border-top:1px solid rgba(233,233,237,0.10)">
+<button class="btn btn-secondary" onClick="{{ goPrev }}" disabled="{{ noPrev }}" style="font-size:13px"><i class="ph ph-arrow-left"></i> Voltar</button>
+<button class="btn btn-primary" onClick="{{ goNext }}" disabled="{{ noNext }}" style="font-size:13px;margin-left:auto">Avançar <i class="ph ph-arrow-right"></i></button>
+</div>
+</div>
+</sc-if>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;pt&quot;,&quot;en&quot;],&quot;default&quot;:&quot;pt&quot;,&quot;tsType&quot;:&quot;'pt'|'en'&quot;,&quot;section&quot;:&quot;App&quot;}}">
+const T = {
+  pt: { summary: 'Resumo', experience: 'Experiência profissional', education: 'Formação', skills: 'Habilidades' },
+  en: { summary: 'Summary', experience: 'Professional experience', education: 'Education', skills: 'Skills' }
+};
+
+const BASE = {
+  name: 'Marina Alves',
+  role: { pt: 'Engenheira de Software Back-end · Sênior', en: 'Senior Backend Software Engineer' },
+  contact: 'marina.alves@dev.br · +55 11 98212-4470 · São Paulo, BR · github.com/marinaalves',
+  summary: {
+    pt: 'Profissional proativa, apaixonada por tecnologia e com facilidade para trabalhar em equipe. Busco novos desafios em uma empresa inovadora.',
+    en: 'Proactive professional, passionate about technology and a good team player. Looking for new challenges at an innovative company.'
+  },
+  jobs: [
+    { company: 'Fintech Kobo', role: { pt: 'Tech Lead', en: 'Tech Lead' }, period: { pt: '01/2025 – atual', en: '01/2025 – Present' }, bullets: [
+      { pt: 'Assumi a squad de pagamentos com 7 pessoas; latência caiu bastante e paramos de ter incidente no fechamento do mês.', en: 'Took over the payments squad of 7; latency dropped a lot and month-end incidents stopped.' },
+      { pt: 'Defini o processo de on-call e o padrão de code review do time.', en: 'Defined the team on-call process and code-review standard.' }
+    ]},
+    { company: 'Fintech Kobo', role: { pt: 'Engenheira de Software Sênior', en: 'Senior Software Engineer' }, period: { pt: '03/2022 – 12/2024', en: '03/2022 – 12/2024' }, bullets: [
+      { pt: 'Responsável pela API de pagamentos e por melhorias de performance.', en: 'Responsible for the payments API and performance improvements.' },
+      { pt: 'Liderei a migração do monólito para 9 serviços com um grupo de 6 pessoas, sem downtime na virada.', en: 'Led the monolith-to-9-services migration with a group of 6, with zero downtime at cutover.' },
+      { pt: 'Reduzi o custo de infraestrutura em R$ 1,2M/ano com rightsizing e cache de consultas.', en: 'Cut infrastructure cost by BRL 1.2M/year through rightsizing and query caching.' }
+    ]},
+    { company: 'Banco Órion', role: { pt: 'Engenheira de Software Pleno', en: 'Mid-level Software Engineer' }, period: { pt: '01/2020 – 12/2022', en: '01/2020 – 12/2022' }, bullets: [
+      { pt: 'Desenvolvi microsserviços de antifraude em Python, avaliando 4M de transações por dia.', en: 'Built Python anti-fraud microservices scoring 4M transactions a day.' },
+      { pt: 'Trabalhei com testes automatizados e code review.', en: 'Worked with automated testing and code review.' }
+    ]},
+    { company: 'Agência Vetor', role: { pt: 'Desenvolvedora Júnior', en: 'Junior Developer' }, period: { pt: '2018 - 2019', en: '2018 - 2019' }, bullets: [
+      { pt: 'Entreguei 14 sites institucionais em Node.js e PostgreSQL, com prazo médio de 3 semanas.', en: 'Shipped 14 corporate sites in Node.js and PostgreSQL, averaging 3 weeks each.' }
+    ]}
+  ],
+  education: [
+    { course: { pt: 'Pós-graduação em Engenharia de Dados', en: 'Postgraduate, Data Engineering' }, school: 'Insper', period: { pt: '02/2025 – 06/2026', en: '02/2025 – 06/2026' } },
+    { course: { pt: 'Bacharelado em Ciência da Computação', en: 'BSc, Computer Science' }, school: 'Universidade Federal do ABC', period: { pt: '02/2015 – 12/2019', en: '02/2015 – 12/2019' } }
+  ],
+  skills: {
+    pt: 'Go ●●●●○ · Python ●●●●● · AWS ●●●○○ · SQL ●●●●○ · Docker ●●●○○ · Kafka ●●○○○',
+    en: 'Go ●●●●○ · Python ●●●●● · AWS ●●●○○ · SQL ●●●●○ · Docker ●●●○○ · Kafka ●●○○○'
+  }
+};
+
+const SUGGESTIONS = [
+  { id: 'm1', kind: 'Métrica', tagClass: 'tag-accent', where: 'Fintech Kobo · Tech Lead',
+    title: 'Bullet sem resultado mensurável', path: 'jobs.0.bullets.0', cta: 'Aplicar',
+    why: 'Os números vieram do que você escreveu na etapa 2 e da versão anterior do currículo — confirme antes de aceitar.',
+    after: { pt: 'Lidero a squad de pagamentos (7 pessoas): p95 de 840ms para 190ms (-77%) e zero incidente no fechamento mensal em 14 ciclos.', en: 'Lead the 7-person payments squad: p95 from 840ms to 190ms (-77%) and zero month-end incidents across 14 cycles.' } },
+  { id: 'm2', kind: 'Métrica', tagClass: 'tag-accent', where: 'Fintech Kobo · Sênior',
+    title: 'Escopo sem escala', path: 'jobs.1.bullets.0', cta: 'Aplicar',
+    why: '"Responsável por" descreve cargo, não entrega. A frase passa a carregar volume e ganho.',
+    after: { pt: 'Reescrevi a API de pagamentos em Go: p95 de 840ms para 190ms sustentando 12k req/min no pico da Black Friday.', en: 'Rewrote the payments API in Go: p95 from 840ms to 190ms while sustaining 12k req/min at Black Friday peak.' } },
+  { id: 'm3', kind: 'Métrica', tagClass: 'tag-accent', where: 'Banco Órion',
+    title: 'Verbo genérico, sem impacto', path: 'jobs.2.bullets.1', cta: 'Aplicar',
+    why: 'Troca "trabalhei com" por ação + resultado. Recrutador e ATS pontuam o número, não o esforço.',
+    after: { pt: 'Elevei a cobertura de testes de 34% para 82% em 6 meses, reduzindo incidentes em produção em 41%.', en: 'Raised test coverage from 34% to 82% in 6 months, cutting production incidents by 41%.' } },
+  { id: 'd1', kind: 'Datas', tagClass: 'tag-outline', where: 'Banco Órion ⇄ Fintech Kobo',
+    title: 'Períodos sobrepostos em 10 meses', path: 'jobs.2.period', cta: 'Corrigir data',
+    why: 'Você entrou na Kobo em 03/2022, mas o Banco Órion está até 12/2022. Se não foi trabalho paralelo, a saída provável é 02/2022.',
+    after: { pt: '01/2020 – 02/2022', en: '01/2020 – 02/2022' } },
+  { id: 'd2', kind: 'Datas', tagClass: 'tag-outline', where: 'Agência Vetor',
+    title: 'Formato de data fora do padrão', path: 'jobs.3.period', cta: 'Normalizar',
+    why: 'Todo o documento usa mm/aaaa. Anos soltos fazem o parser do ATS calcular tempo de experiência errado.',
+    after: { pt: '08/2018 – 12/2019', en: '08/2018 – 12/2019' } },
+  { id: 'a1', kind: 'ATS', tagClass: 'tag-neutral', where: 'Resumo',
+    title: 'Resumo sem palavra-chave técnica', path: 'summary', cta: 'Reescrever',
+    why: 'Adjetivos de personalidade não são indexados. O resumo passa a carregar stack, escala e um resultado.',
+    after: { pt: 'Engenheira back-end com 8 anos em plataformas de pagamento de alto volume (Go, Python, AWS). Reduzi latência p95 em 77% e custo de infraestrutura em R$ 1,2M/ano liderando squads de 4 a 7 pessoas.', en: 'Backend engineer with 8 years on high-volume payment platforms (Go, Python, AWS). Cut p95 latency by 77% and infrastructure cost by BRL 1.2M/year while leading squads of 4–7.' } },
+  { id: 'a2', kind: 'ATS', tagClass: 'tag-neutral', where: 'Habilidades',
+    title: 'Barras de proficiência não são lidas', path: 'skills', cta: 'Converter em texto',
+    why: 'Símbolos de nível somem no parser e ocupam linha. Lista separada por vírgula é indexada inteira.',
+    after: { pt: 'Go, Python, Java · PostgreSQL, Redis, Kafka · AWS (ECS, Lambda, RDS), Terraform, Docker, Kubernetes · gRPC, REST, DDD, TDD · Datadog, OpenTelemetry', en: 'Go, Python, Java · PostgreSQL, Redis, Kafka · AWS (ECS, Lambda, RDS), Terraform, Docker, Kubernetes · gRPC, REST, DDD, TDD · Datadog, OpenTelemetry' } }
+];
+
+class Component extends DCLogic {
+  state = { step: 1, imported: false, lang: null, done: {}, dismissed: {}, filter: 'all', hoverMark: null, hoverRight: false, focusedSug: null,
+    eduItems: [{ id: 1, course: 'Pós-graduação em Engenharia de Dados', school: 'Insper', start: '02/2025', end: '06/2026' }],
+    jobItems: [{ id: 1, company: 'Fintech Kobo', role: 'Tech Lead', start: '01/2025', end: 'atual', text: 'Assumi a squad de pagamentos, 7 pessoas. Latência caiu bastante e a gente parou de ter incidente no fechamento do mês.' }],
+    skillItems: [{ id: 1, name: 'Terraform' }, { id: 2, name: 'Kubernetes' }, { id: 3, name: 'OpenTelemetry' }],
+    nextId: 100,
+    modal: null, draft: {}, exp: { pt: true, en: true, pdf: true, docx: true } };
+
+  get lang() { return this.state.lang || this.props.defaultLang || 'pt'; }
+
+  addItem(key, blank) {
+    this.setState(st => ({ nextId: st.nextId + 1, [key]: st[key].concat([Object.assign({ id: st.nextId }, blank)]) }));
+  }
+
+  openModal(kind, blank) { this.setState({ modal: kind, draft: blank }); }
+  closeModal() { this.setState({ modal: null, draft: {} }); }
+  setDraft(field, value) { this.setState(st => ({ draft: Object.assign({}, st.draft, { [field]: value }) })); }
+  submitModal() {
+    const kind = this.state.modal, key = kind === 'edu' ? 'eduItems' : kind === 'job' ? 'jobItems' : 'skillItems';
+    this.addItem(key, this.state.draft);
+    this.closeModal();
+  }
+
+  setField(key, id, field, value) {
+    this.setState(st => ({ [key]: st[key].map(x => x.id === id ? Object.assign({}, x, { [field]: value }) : x) }));
+  }
+
+  removeItem(key, id) {
+    this.setState(st => ({ [key]: st[key].filter(x => x.id !== id) }));
+  }
+
+  revealSuggestion(num) {
+    this.setState({ focusedSug: num, hoverMark: null });
+    requestAnimationFrame(() => {
+      const el = document.getElementById('sug-' + num);
+      if (!el) return;
+      let box = el.parentElement;
+      while (box) {
+        const st = getComputedStyle(box);
+        if (/(auto|scroll)/.test(st.overflowY) && box.scrollHeight > box.clientHeight + 1) break;
+        box = box.parentElement;
+      }
+      const r = el.getBoundingClientRect();
+      if (box) {
+        const br = box.getBoundingClientRect();
+        box.scrollTop += r.top - br.top - 24;
+      } else {
+        window.scrollBy({ top: r.top - 24, behavior: 'smooth' });
+      }
+    });
+  }
+
+  toggleExp(k) { this.setState(st => ({ exp: { ...st.exp, [k]: !st.exp[k] } })); }
+
+  patched() {
+    const clone = JSON.parse(JSON.stringify(BASE));
+    for (const s of SUGGESTIONS) {
+      if (!this.state.done[s.id]) continue;
+      let node = clone;
+      for (const k of s.path.split('.')) node = node[k];
+      Object.assign(node, s.after, { updated: true });
+    }
+    return clone;
+  }
+
+  renderVals() {
+    const lang = this.lang, step = this.state.step, r = this.patched(), filter = this.state.filter;
+    const before = (path) => { let n = BASE; for (const k of path.split('.')) n = n[k]; return n[lang] || n.pt; };
+    const applied = SUGGESTIONS.filter(s => this.state.done[s.id]).length;
+    const open = SUGGESTIONS.filter(s => !this.state.done[s.id] && !this.state.dismissed[s.id]).length;
+    const score = Math.min(100, 52 + applied * 7);
+    const visible = SUGGESTIONS.filter(s => !this.state.dismissed[s.id]).filter(s => filter === 'all' || s.kind === filter);
+    const langs = (this.state.exp.pt ? 1 : 0) + (this.state.exp.en ? 1 : 0);
+    const fmts = (this.state.exp.pdf ? 1 : 0) + (this.state.exp.docx ? 1 : 0);
+    const files = langs * fmts;
+    const dlLabel = files === 0 ? 'Selecione idioma e formato' : files === 1 ? 'Baixar 1 arquivo' : 'Baixar ' + files + ' arquivos';
+    const marks = {};
+    SUGGESTIONS.forEach((sg, i) => {
+      if (this.state.dismissed[sg.id]) return;
+      marks[sg.path] = { num: String(i + 1), kind: sg.kind, title: sg.title, after: sg.after[lang] };
+    });
+    const hov = this.state.hoverMark;
+    const mk = p => marks[p]
+      ? { hasMark: true, mark: Object.assign({}, marks[p], {
+          showLeft: hov === p && !this.state.hoverRight,
+          showRight: hov === p && this.state.hoverRight,
+          enter: (e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            this.setState({ hoverMark: p, hoverRight: r.left + 300 > window.innerWidth });
+          },
+          leave: () => this.setState({ hoverMark: null }),
+          detail: () => this.revealSuggestion(marks[p].num)
+        }) }
+      : { hasMark: false, mark: { num: '', kind: '', title: '', after: '', showLeft: false, showRight: false, enter: null, leave: null, detail: null } };
+    const navCls = n => step === n ? 'btn-primary' : 'btn-secondary';
+    return {
+      isStep1: step === 1, isStep2: step === 2, isStep3: step === 3, isStep4: step === 4,
+      nav1: navCls(1), nav2: navCls(2), nav3: navCls(3), nav4: navCls(4),
+      go1: () => this.setState({ step: 1 }), go2: () => this.setState({ step: 2 }),
+      go3: () => this.setState({ step: 3 }), go4: () => this.setState({ step: 4 }),
+      goPrev: () => this.setState({ step: Math.max(1, step - 1) }),
+      goNext: () => this.setState({ step: Math.min(4, step + 1) }),
+      noPrev: step === 1, noNext: step === 4,
+      eduItems: this.state.eduItems.map(it => Object.assign({}, it, {
+        remove: () => this.removeItem('eduItems', it.id),
+        onCourse: e => this.setField('eduItems', it.id, 'course', e.target.value),
+        onSchool: e => this.setField('eduItems', it.id, 'school', e.target.value),
+        onStart: e => this.setField('eduItems', it.id, 'start', e.target.value),
+        onEnd: e => this.setField('eduItems', it.id, 'end', e.target.value)
+      })),
+      jobItems: this.state.jobItems.map(it => Object.assign({}, it, {
+        remove: () => this.removeItem('jobItems', it.id),
+        onCompany: e => this.setField('jobItems', it.id, 'company', e.target.value),
+        onRole: e => this.setField('jobItems', it.id, 'role', e.target.value),
+        onStart: e => this.setField('jobItems', it.id, 'start', e.target.value),
+        onEnd: e => this.setField('jobItems', it.id, 'end', e.target.value),
+        onText: e => this.setField('jobItems', it.id, 'text', e.target.value)
+      })),
+      skillItems: this.state.skillItems.map(it => Object.assign({}, it, {
+        remove: () => this.removeItem('skillItems', it.id),
+        onName: e => this.setField('skillItems', it.id, 'name', e.target.value)
+      })),
+      noEdu: this.state.eduItems.length === 0, noJob: this.state.jobItems.length === 0, noSkill: this.state.skillItems.length === 0,
+      eduCount: this.state.eduItems.length + (this.state.eduItems.length === 1 ? ' item' : ' itens'),
+      jobCount: this.state.jobItems.length + (this.state.jobItems.length === 1 ? ' item' : ' itens'),
+      skillCount: this.state.skillItems.length + (this.state.skillItems.length === 1 ? ' item' : ' itens'),
+      openEduModal: () => this.openModal('edu', { course: '', school: '', start: '', end: '' }),
+      openJobModal: () => this.openModal('job', { company: '', role: '', start: '', end: '', text: '' }),
+      openSkillModal: () => this.openModal('skill', { name: '' }),
+      closeModal: () => this.closeModal(),
+      stopProp: e => e.stopPropagation(),
+      submitModal: () => this.submitModal(),
+      modalOpen: !!this.state.modal,
+      isEduModal: this.state.modal === 'edu', isJobModal: this.state.modal === 'job', isSkillModal: this.state.modal === 'skill',
+      modalTitle: this.state.modal === 'edu' ? 'Nova formação' : this.state.modal === 'job' ? 'Nova experiência' : 'Nova habilidade',
+      draft: Object.assign({}, this.state.draft, {
+        onCourse: e => this.setDraft('course', e.target.value), onSchool: e => this.setDraft('school', e.target.value),
+        onStart: e => this.setDraft('start', e.target.value), onEnd: e => this.setDraft('end', e.target.value),
+        onCompany: e => this.setDraft('company', e.target.value), onRole: e => this.setDraft('role', e.target.value),
+        onText: e => this.setDraft('text', e.target.value), onName: e => this.setDraft('name', e.target.value)
+      }),
+      goHome: (e) => { e.preventDefault(); document.body.style.transition = 'opacity .2s ease-in'; document.body.style.opacity = '0'; setTimeout(() => { window.location.href = './CurriculoVivoHome.dc.html'; }, 200); },
+      imported: this.state.imported,
+      doImport: () => this.setState({ imported: true }),
+      expPt: this.state.exp.pt, expEn: this.state.exp.en, expPdf: this.state.exp.pdf, expDocx: this.state.exp.docx,
+      toggleExpPt: () => this.toggleExp('pt'), toggleExpEn: () => this.toggleExp('en'),
+      toggleExpPdf: () => this.toggleExp('pdf'), toggleExpDocx: () => this.toggleExp('docx'),
+      downloadLabel: dlLabel,
+      score,
+      scoreBars: Array.from({ length: 10 }, (_, i) => ({ on: score >= (i + 1) * 10, off: score < (i + 1) * 10 })),
+      scoreNote: open === 0 ? 'Todas as sugestões tratadas' : open + (open === 1 ? ' sugestão aberta' : ' sugestões abertas'),
+      langPt: lang === 'pt' ? 'btn-primary' : 'btn-ghost',
+      langEn: lang === 'en' ? 'btn-primary' : 'btn-ghost',
+      langOffset: lang === 'pt' ? '0' : '100%',
+      setPt: () => this.setState({ lang: 'pt' }), setEn: () => this.setState({ lang: 'en' }),
+      langNote: lang === 'pt' ? 'Versão em inglês sincronizada — 0 bullets pendentes' : 'Portuguese version in sync — 0 bullets pending',
+      t: T[lang],
+      openCount: open === 0 ? 'nenhuma pendente' : open + (open === 1 ? ' pendente' : ' pendentes'),
+      appliedNote: applied + (applied === 1 ? ' sugestão aplicada' : ' sugestões aplicadas') + ' — bullets com número em primeiro lugar',
+      fAll: filter === 'all' ? 'btn-primary' : 'btn-secondary',
+      fMet: filter === 'Métrica' ? 'btn-primary' : 'btn-secondary',
+      fDat: filter === 'Datas' ? 'btn-primary' : 'btn-secondary',
+      fAts: filter === 'ATS' ? 'btn-primary' : 'btn-secondary',
+      filterAll: () => this.setState({ filter: 'all' }), filterMet: () => this.setState({ filter: 'Métrica' }),
+      filterDat: () => this.setState({ filter: 'Datas' }), filterAts: () => this.setState({ filter: 'ATS' }),
+      noneLeft: visible.length === 0,
+      acceptAll: () => this.setState(st => {
+        const done = { ...st.done };
+        for (const s of SUGGESTIONS) if (!st.dismissed[s.id]) done[s.id] = true;
+        return { done };
+      }),
+      r: {
+        name: r.name, role: r.role[lang], contact: r.contact, summary: r.summary[lang], skills: r.skills[lang],
+        summaryM: mk('summary'), skillsM: mk('skills'),
+        jobs: r.jobs.map((j, ji) => Object.assign({ company: j.company, role: j.role[lang], period: j.period[lang], bullets: j.bullets.map((b, bi) => Object.assign({ text: b[lang], updated: !!b.updated }, mk('jobs.' + ji + '.bullets.' + bi))) }, mk('jobs.' + ji + '.period'))),
+        education: r.education.map(e => ({ course: e.course[lang], school: e.school, period: e.period[lang] }))
+      },
+      suggestions: visible.map(s => ({
+        num: String(SUGGESTIONS.indexOf(s) + 1),
+        focused: this.state.focusedSug === String(SUGGESTIONS.indexOf(s) + 1),
+        kind: s.kind, tagClass: s.tagClass, where: s.where, title: s.title, why: s.why, cta: s.cta,
+        before: before(s.path), after: s.after[lang],
+        done: !!this.state.done[s.id], open: !this.state.done[s.id],
+        accept: () => this.setState(st => ({ done: { ...st.done, [s.id]: true } })),
+        undo: () => this.setState(st => { const d = { ...st.done }; delete d[s.id]; return { done: d }; }),
+        dismiss: () => this.setState(st => ({ dismissed: { ...st.dismissed, [s.id]: true } }))
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

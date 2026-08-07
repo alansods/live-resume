@@ -1,0 +1,119 @@
+/* Etapa 02 — Atualizar. Medidas e espaçamentos vêm do handoff; cores, dos tokens. */
+
+/* A medida da coluna vem de `Shell.module.css`, que a define para todas as etapas. */
+
+.kicker {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  margin: 0 0 var(--space-2);
+}
+
+.title {
+  font-size: 32px;
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.82;
+  margin: 0 0 var(--space-8);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* A linha não encolhe quando o botão sai, na seção vazia. */
+  min-height: 30px;
+  margin-bottom: 16px;
+}
+
+.addButton {
+  font-size: 13px;
+  min-height: 36px;
+  padding: 8px 16px;
+}
+
+.sectionLabel {
+  font-size: 14px;
+  font-weight: var(--font-heading-weight);
+}
+
+.sectionCount {
+  font-size: 11px;
+  margin-right: auto;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.icon {
+  color: var(--color-accent);
+  display: block;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* — estado vazio — */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 38px 24px;
+  border: 1px dashed var(--color-neutral-800);
+  border-radius: var(--radius-md);
+  background: var(--color-sunken);
+}
+
+.emptyIcon {
+  display: block;
+  color: var(--color-neutral-700);
+}
+
+.emptyText {
+  font-size: 13.5px;
+  color: var(--color-neutral-400);
+  max-width: 42ch;
+  text-wrap: pretty;
+}
+
+.emptyHint {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+
+.emptyButton {
+  font-size: 13px;
+  min-height: 38px;
+  padding: 9px 18px;
+  margin-top: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+}
+
+.itemActions {
+  display: flex;
+  justify-content: flex-end;
+}

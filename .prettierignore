@@ -1,0 +1,11 @@
+.next
+node_modules
+package-lock.json
+
+# Material que não é código deste projeto
+claude-design
+openspec
+.opencode
+.github
+.claude
+AGENTS.md

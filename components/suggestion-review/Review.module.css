@@ -1,0 +1,440 @@
+/* Etapa 03 — Revisar. Medidas do handoff; cores, dos tokens do design system. */
+
+/* A medida da coluna vem de `Shell.module.css`, que a define para todas as etapas. */
+
+.kicker {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  margin: 0 0 var(--space-2);
+}
+
+.title {
+  font-size: 32px;
+  margin: 0 0 var(--space-2);
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.82;
+  margin: 0 0 var(--space-6);
+}
+
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-accent-900);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/*
+ * Empilhado: o currículo ocupa a linha inteira e o painel de sugestões vem abaixo.
+ *
+ * Era `repeat(auto-fit, minmax(460px, 1fr))`, duas colunas lado a lado. Na coluna comum
+ * das etapas — 920px, 824px de conteúdo — duas colunas de 460px não cabem, e o currículo
+ * é o bloco que menos pode ser espremido: é a prévia do documento que a pessoa vai
+ * mandar. Entre apertar os dois e dar a linha inteira a cada um, a linha inteira.
+ */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ── Papel do currículo ──────────────────────────────────────────────────── */
+
+.paper {
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-900);
+  padding: 44px 48px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  line-height: 1.5;
+  width: 100%;
+  max-width: 760px;
+  box-shadow: var(--shadow-lg);
+}
+
+.paperName {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.paperRole {
+  font-size: 13px;
+  margin: 2px 0 0;
+}
+
+.paperContact {
+  font-size: 11px;
+  color: var(--color-neutral-700);
+  margin: 4px 0 var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.paperSection {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-neutral-700);
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+.paperText {
+  margin: 0 0 var(--space-3);
+}
+
+.paperItem {
+  margin-bottom: var(--space-4);
+}
+
+.paperItemHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: 2px;
+}
+
+.paperItemTitle {
+  font-weight: 600;
+}
+
+.paperPeriod {
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+}
+
+.paperBullets {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.paperBullets li {
+  margin-bottom: 3px;
+}
+
+/* ── Marcador e tooltip ──────────────────────────────────────────────────── */
+
+.markWrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: super;
+  margin-left: 4px;
+  line-height: 1;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tooltip,
+.tooltipRight {
+  position: absolute;
+  top: 21px;
+  z-index: 20;
+  display: block;
+  width: 290px;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+  font-size: 11.5px;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+}
+
+/*
+ * A ponte. Entre o marcador (15px) e o resumo (top: 21px) sobram 6px de papel: descer o
+ * mouse até "Ver detalhes" atravessava essa faixa, saía do marcador e fechava o resumo
+ * antes do clique. A faixa passa a pertencer ao próprio resumo — o ponteiro nunca deixa
+ * o marcador no caminho.
+ */
+.tooltip::before,
+.tooltipRight::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -6px;
+  height: 6px;
+}
+
+.tooltip {
+  left: -8px;
+}
+
+.tooltipRight {
+  right: -8px;
+}
+
+.tooltipKind {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-400);
+  margin-bottom: 4px;
+}
+
+.tooltipTitle {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.tooltipAfter {
+  display: block;
+  color: var(--color-accent-300);
+  margin-bottom: 9px;
+}
+
+.tooltipButton {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  cursor: pointer;
+}
+
+/* ── Painel de sugestões ─────────────────────────────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.panelHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.panelTitle {
+  font-size: 18px;
+  margin: 0;
+}
+
+.panelNote {
+  font-size: 11.5px;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.panelMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pending {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.selectAll {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 1px solid var(--color-neutral-700);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+/*
+ * A nota de ATS e as suas barras saíram daqui: agora são o chip da top bar. O que restou
+ * é o recado de que não sobrou nada a tratar, que é do painel e não da nota.
+ */
+.scoreNote {
+  font-size: 11px;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filter,
+.filterOn {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-neutral-700);
+  cursor: pointer;
+}
+
+.filter {
+  background: transparent;
+  color: inherit;
+}
+
+.filterOn {
+  background: var(--color-accent-600);
+  border-color: var(--color-accent-600);
+  color: var(--color-accent-100);
+}
+
+.empty {
+  font-size: 12.5px;
+  opacity: 0.7;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ── Cartão ──────────────────────────────────────────────────────────────── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  scroll-margin-top: 24px;
+}
+
+.cardFocused {
+  box-shadow: 0 0 0 1px var(--color-accent-600);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.badge {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tag {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-neutral-700);
+}
+
+.where {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 2px;
+}
+
+.before,
+.after,
+.why,
+.unsupported {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* Riscado só aqui, no cartão — nunca no papel do currículo. */
+.beforeText {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-neutral-600);
+  color: var(--color-neutral-400);
+}
+
+.afterText {
+  color: var(--color-accent-300);
+}
+
+.why {
+  font-size: 11.5px;
+  opacity: 0.7;
+}
+
+.unsupported {
+  font-size: 11.5px;
+  color: var(--color-accent-400);
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.check {
+  /* Forma e estados vêm do primitivo; aqui só o tamanho do texto do rodapé. */
+  display: flex;
+  font-size: 12.5px;
+}
+
+.dismiss {
+  font-size: 11px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+/*
+ * O período que não é data: texto do arquivo, em linha própria abaixo do título.
+ * Sem `nowrap` — é ele que precisa quebrar, e não o título.
+ */
+.paperRawPeriod {
+  margin: 0 0 2px;
+  color: var(--color-neutral-700);
+}

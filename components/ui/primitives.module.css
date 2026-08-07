@@ -1,0 +1,200 @@
+/*
+ * Primitivos de interface.
+ *
+ * Todos os valores visuais vêm dos tokens de claude-design/styles.css — nenhum hex é
+ * escrito aqui. Para mudar uma cor, muda-se lá.
+ */
+
+/* — cartão — */
+.card {
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  /* 12px do handoff — o token mais próximo (--space-4) é 11.2px. */
+  gap: 12px;
+}
+
+/*
+ * — campo —
+ *
+ * A forma do campo vem das classes `field` e `input` do design system, do mesmo jeito
+ * que o botão compõe `btn` — o que existe aqui é só o que o design system não cobre.
+ *
+ * Havia uma cópia local de `.input` neste arquivo, com outros valores: sem `min-height`,
+ * fundo `--color-bg` em vez de `--color-surface`, raio 4px em vez de 8px e uma borda
+ * simulada por `box-shadow`. O resultado era um campo mais baixo e mais escuro que o
+ * cartão que o contém — hierarquia invertida, porque o campo deve ser a superfície mais
+ * clara. Duplicar a declaração foi o que permitiu a divergência; consumi-la é o que
+ * impede que ela volte.
+ */
+.field {
+  min-width: 0;
+}
+
+/*
+ * Os ajustes que o design system não tem. A classe dobrada eleva a especificidade sem
+ * `!important`: estas regras precisam vencer as de `.input`, que têm a mesma contagem e
+ * cuja ordem de injeção não é garantida.
+ */
+.control.control[aria-invalid="true"] {
+  border-color: var(--color-accent-600);
+}
+
+/* 86px é a altura que o handoff pede para "O que você entregou?". */
+.textarea.textarea {
+  min-height: 86px;
+  resize: vertical;
+}
+
+.error {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--color-accent-300);
+}
+
+/* — chip — */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 10px;
+  border-radius: var(--radius-md);
+  /* Mesma superfície do cartão de item: é o chip que carrega o fundo. */
+  background: var(--color-card);
+}
+
+/*
+ * O campo dentro do chip é o `input` do design system sem casca: quem desenha a caixa é
+ * o chip. Classe dobrada pelo mesmo motivo de `.control`.
+ */
+.chipInput.chipInput {
+  width: 170px;
+  min-height: 30px;
+  background: transparent;
+  border-color: transparent;
+}
+
+/* — modal — */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay);
+  animation: modalFade 0.18s ease-out;
+}
+
+.dialog {
+  width: 420px;
+  max-width: 90vw;
+  padding: 26px;
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow:
+    0 0 0 1px var(--color-neutral-700),
+    0 24px 60px rgb(0 0 0 / 0.6);
+  animation: modalPop 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.dialogTitle {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: var(--font-heading-weight);
+  margin: 0;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@keyframes modalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .dialog {
+    animation: none;
+  }
+}
+
+/*
+ * — caixa de seleção —
+ *
+ * A forma vem de `.radio .dot` do design system, com o raio quadrado que o handoff pede
+ * para a etapa 04. O `input` continua existindo e continua recebendo clique, foco e
+ * rótulo: ele só sai da vista, porque o controle nativo traz a cor do sistema operacional
+ * para dentro de um tema que não tem essa cor.
+ */
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.checkbox input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkboxBox {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-divider);
+}
+
+.checkbox:hover .checkboxBox {
+  border-color: var(--color-accent);
+}
+
+.checkbox input:checked + .checkboxBox {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  /* O anel interno da cor do fundo é o que desenha a marca, como no design system. */
+  box-shadow: inset 0 0 0 3px var(--color-bg);
+}
+
+.checkbox input:focus-visible + .checkboxBox {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.checkbox input:disabled + .checkboxBox {
+  opacity: 0.5;
+}

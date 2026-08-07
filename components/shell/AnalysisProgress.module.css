@@ -1,0 +1,40 @@
+/* A medida da coluna vem de `Shell.module.css`; aqui só o arranjo interno. */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: entrar 0.22s ease-out;
+}
+
+.title {
+  margin: 0;
+}
+
+.detail {
+  font-size: 14px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  margin: -12px 0 0;
+}
+
+.reload {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  margin: 0;
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column {
+    animation: none;
+  }
+}

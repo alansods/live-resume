@@ -1,0 +1,123 @@
+/* Home. Medidas do handoff; cores e classes de card/tag, do design system. */
+
+/* O respiro de 56px abaixo da top bar, que antes era margem dela. */
+.page {
+  max-width: 1120px;
+  margin: 56px auto 0;
+  padding: 0 24px 112px;
+  animation: pageIn 0.25s ease-out;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: end;
+  margin-bottom: 72px;
+}
+
+.headline {
+  font-size: 52px;
+  max-width: 15ch;
+  margin-bottom: 20px;
+  text-wrap: pretty;
+}
+
+/*
+ * A atenuação é COR, e não `opacity`: a opacidade do parágrafo apagaria junto o roxo dos
+ * trechos destacados, que é justamente o que precisa se destacar dele.
+ */
+.lead {
+  font-size: 17px;
+  max-width: 52ch;
+  color: color-mix(in srgb, var(--color-text) 82%, transparent);
+  text-wrap: pretty;
+}
+
+/* O destaque é só cor: `em` sem itálico, para não virar ênfase tipográfica também. */
+.leadEm {
+  color: var(--color-accent);
+  font-style: normal;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: 11px 22px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-bottom: 6px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.batchNote {
+  font-size: 13px;
+  opacity: 0.6;
+  max-width: 34ch;
+  margin: 0;
+}
+
+.flowLabel {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 24px;
+}
+
+.flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Empilha em tela estreita: o grid de 4 colunas não cabe em telefone. */
+@media (max-width: 900px) {
+  .hero,
+  .flow {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .headline {
+    font-size: 38px;
+  }
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A entrada é enfeite: quem pede menos movimento vê a página pronta. */
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+}

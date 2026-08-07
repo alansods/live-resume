@@ -1,0 +1,56 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+}
+
+.icon {
+  flex: none;
+}
+
+.done,
+.active {
+  color: var(--color-accent-400);
+}
+
+.active {
+  color: var(--color-accent);
+}
+
+.pending {
+  color: var(--color-neutral-700);
+}
+
+.iconActive {
+  animation: girar 0.7s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconActive {
+    animation: none;
+  }
+}
+
+.label {
+  color: var(--color-text);
+}
+
+.labelPending {
+  color: var(--color-neutral-600);
+}

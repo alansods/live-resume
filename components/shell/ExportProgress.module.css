@@ -1,0 +1,30 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px 24px;
+  border-radius: var(--radius-md);
+  background: var(--color-header);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.titulo {
+  font-size: 14px;
+}
+
+.contador {
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--color-neutral-600);
+}
+
+.reload {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  margin: 0;
+}

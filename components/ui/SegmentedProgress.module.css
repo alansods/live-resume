@@ -1,0 +1,20 @@
+.track {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.segment,
+.segmentFilled {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.segment {
+  background: var(--color-neutral-800);
+}
+
+.segmentFilled {
+  background: var(--color-accent);
+}

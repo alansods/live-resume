@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Currículo Vivo — landing" description="Landing page do produto: atualize o currículo em minutos, com métricas, checagem de datas, PT/EN e exportação DOCX/PDF" -->
+<helmet>
+<script src="./ds-base.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<style>body{margin:0}</style>
+</helmet>
+<div style="background:#161826">
+<div style="max-width:1120px;margin:0 auto;padding:0 24px">
+<nav class="nav" style="padding-left:0;padding-right:0">
+<span class="nav-brand" style="display:flex;align-items:center;gap:9px"><span style="width:9px;height:9px;border-radius:50%;background:#9184d9"></span>Currículo Vivo</span>
+<a href="#como">Como funciona</a>
+<a href="#exemplo">Antes e depois</a>
+<a href="#preco">Preço</a>
+<a class="btn btn-primary" href="../curriculo-vivo-app/CurriculoVivoApp.dc.html" style="margin-left:12px">Atualizar meu currículo</a>
+</nav>
+
+<section style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,0.95fr);gap:56px;align-items:center;padding:88px 0 72px">
+<div>
+<h6 style="color:#9184d9;margin-bottom:18px">Atualização de currículo</h6>
+<h1 style="font-size:58px;max-width:16ch;margin-bottom:20px;text-wrap:pretty">Seu currículo está dois anos atrasado. Isso resolve em dez minutos.</h1>
+<p style="font-size:17px;max-width:50ch;opacity:.82;margin-bottom:28px;text-wrap:pretty">Suba o arquivo que você já tem, conte só o que mudou, e receba de volta um currículo com resultados em números, datas conferidas e formato que passa em leitor automático — em português e em inglês.</p>
+<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+<a class="btn btn-primary" href="../curriculo-vivo-app/CurriculoVivoApp.dc.html" style="font-size:15px;padding:10px 20px">Começar com meu arquivo</a>
+<span class="text-muted" style="font-size:13px">Primeira atualização grátis · sem cadastro</span>
+</div>
+<div style="display:flex;gap:10px;margin-top:26px;flex-wrap:wrap"><span class="tag tag-neutral">Baixe as 4 versões de uma vez</span><span class="tag tag-neutral">PT-BR e English</span><span class="tag tag-neutral">Qualquer área</span></div>
+</div>
+<div style="border-radius:14px;background:#232532;box-shadow:0 0 0 1px #595d6c, 0 16px 40px rgba(0,0,0,0.55);overflow:hidden">
+<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1c1e2b"><span style="width:8px;height:8px;border-radius:50%;background:#9184d9"></span><span style="font-size:12px">Currículo Vivo</span><span class="text-muted" style="font-size:11px;margin-left:auto">Revisão · 7 sugestões</span></div>
+<div style="height:340px;background:repeating-linear-gradient(135deg,#1e2030,#1e2030 8px,#232532 8px,#232532 16px);display:grid;place-items:center">
+<div style="text-align:center;display:flex;flex-direction:column;gap:6px"><span style="font-family:ui-monospace,monospace;font-size:12px;color:#b2b6ca">[ screenshot: tela de revisão ]</span><span style="font-family:ui-monospace,monospace;font-size:11px;color:#75798c">1440×900 · currículo + painel de sugestões</span></div>
+</div>
+</div>
+</section>
+</div>
+
+<section style="background:#262a60;background-image:radial-gradient(120% 140% at 12% 0%,#353b80 0%,#262a60 58%)">
+<div style="max-width:1120px;margin:0 auto;padding:56px 24px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:32px">
+<div><div style="font-size:44px;font-family:Inter,sans-serif;font-weight:500;letter-spacing:-0.02em">75%</div><div style="font-size:13px;opacity:.75;max-width:22ch">das vagas grandes filtram currículo por software antes de um humano ler</div></div>
+<div><div style="font-size:44px;font-family:Inter,sans-serif;font-weight:500;letter-spacing:-0.02em">6,3s</div><div style="font-size:13px;opacity:.75;max-width:22ch">é o tempo médio que um recrutador passa na primeira leitura</div></div>
+<div><div style="font-size:44px;font-family:Inter,sans-serif;font-weight:500;letter-spacing:-0.02em">10 min</div><div style="font-size:13px;opacity:.75;max-width:22ch">do upload ao arquivo pronto nos dois idiomas</div></div>
+<div><div style="font-size:44px;font-family:Inter,sans-serif;font-weight:500;letter-spacing:-0.02em">0</div><div style="font-size:13px;opacity:.75;max-width:22ch">dado inventado — toda métrica passa pela sua confirmação</div></div>
+</div>
+</section>
+
+<div style="max-width:1120px;margin:0 auto;padding:0 24px">
+<section id="exemplo" style="padding:88px 0 0">
+<h6 class="text-muted" style="margin-bottom:24px">Antes e depois</h6>
+<h2 style="max-width:24ch;margin-bottom:32px">A diferença não é o design. É a frase.</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px">
+<div style="padding:22px;border-radius:8px;background:#1e2030;display:flex;flex-direction:column;gap:14px">
+<span class="tag tag-neutral" style="align-self:flex-start">Como estava</span>
+<p style="margin:0;font-size:14px;color:#b2b6ca">"Responsável pelo atendimento e por melhorias no processo da área."</p>
+<p style="margin:0;font-size:14px;color:#b2b6ca">"Trabalhei com controle de estoque e relatórios."</p>
+<p class="text-muted" style="margin:0;font-size:12px">Descreve o cargo. Não diz o que aconteceu por causa de você.</p>
+</div>
+<div style="padding:22px;border-radius:8px;background:#2b2741;display:flex;flex-direction:column;gap:14px">
+<span class="tag tag-accent" style="align-self:flex-start">Como fica</span>
+<p style="margin:0;font-size:14px;color:#e7e5fe">"Reestruturei o atendimento de 3 lojas: tempo de resposta de 48h para 6h e NPS de 41 para 68 em um ano."</p>
+<p style="margin:0;font-size:14px;color:#e7e5fe">"Reduzi a ruptura de estoque de 12% para 3% com previsão semanal de demanda, liberando R$ 380 mil em capital."</p>
+<p class="text-muted" style="margin:0;font-size:12px">Mesmo trabalho, com escala e resultado — e você confirma cada número.</p>
+</div>
+</div>
+</section>
+
+<section id="como" style="padding:88px 0 0">
+<h6 class="text-muted" style="margin-bottom:24px">Como funciona</h6>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+<div class="card elev-sm"><span class="card-kicker">01</span><span class="card-title">Sobe o arquivo</span><p class="card-body">DOCX ou PDF. O app separa cabeçalho, experiências, formação e habilidades — e marca o que está sem número.</p></div>
+<div class="card elev-sm"><span class="card-kicker">02</span><span class="card-title">Conta o que mudou</span><p class="card-body">Formação nova, cargo novo, entregas recentes. Você não reescreve nada do que já existe.</p></div>
+<div class="card elev-sm"><span class="card-kicker">03</span><span class="card-title">Aceita as sugestões</span><p class="card-body">Métrica sugerida, data sobreposta, regra de ATS. Uma a uma ou todas, sempre com desfazer.</p></div>
+<div class="card elev-sm"><span class="card-kicker">04</span><span class="card-title">Baixa nos dois idiomas</span><p class="card-body">PT-BR e English, DOCX e PDF, do mesmo modelo de coluna única — e um clique baixa as quatro versões de uma vez, em .zip.</p></div>
+</div>
+</section>
+
+<section style="padding:88px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px">
+<div style="display:flex;flex-direction:column;gap:10px"><i class="ph ph-calendar-x" style="font-size:22px;color:#9184d9"></i><h4 style="margin:0">Datas conferidas</h4><p style="margin:0;font-size:14px;opacity:.8">Períodos que se sobrepõem, lacunas sem explicação e formatos misturados aparecem com a correção já proposta.</p></div>
+<div style="display:flex;flex-direction:column;gap:10px"><i class="ph ph-translate" style="font-size:22px;color:#9184d9"></i><h4 style="margin:0">Duas versões vivas</h4><p style="margin:0;font-size:14px;opacity:.8">PT-BR e inglês no mesmo documento. Mudar uma frase marca o par como pendente em vez de traduzir por cima — e você baixa as duas versões juntas se quiser.</p></div>
+<div style="display:flex;flex-direction:column;gap:10px"><i class="ph ph-scan" style="font-size:22px;color:#9184d9"></i><h4 style="margin:0">Feito para ser lido por máquina</h4><p style="margin:0;font-size:14px;opacity:.8">Coluna única, sem tabela, sem caixa de texto, sem ícone, datas em mm/aaaa e PDF com texto selecionável.</p></div>
+</section>
+
+<section id="preco" style="padding:88px 0 0">
+<h6 class="text-muted" style="margin-bottom:24px">Preço</h6>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:760px">
+<div class="card elev-sm" style="padding:24px;gap:10px"><span class="card-title">Uma atualização</span><div style="font-size:34px;font-family:Inter,sans-serif">Grátis</div><p class="card-body">Um currículo, um idioma, exportação em PDF. Sem cadastro.</p><a class="btn btn-secondary btn-block" href="../curriculo-vivo-app/CurriculoVivoApp.dc.html">Começar</a></div>
+<div class="card elev-md" style="padding:24px;gap:10px"><span class="card-kicker">Completo</span><span class="card-title">Anual</span><div style="font-size:34px;font-family:Inter,sans-serif">R$ 19<span class="text-muted" style="font-size:15px">/mês</span></div><p class="card-body">Versões ilimitadas, dois idiomas, DOCX e PDF, histórico de versões e currículo ajustado por vaga.</p><a class="btn btn-primary btn-block" href="../curriculo-vivo-app/CurriculoVivoApp.dc.html">Assinar</a></div>
+</div>
+</section>
+
+<section style="padding:88px 0 112px">
+<div style="display:flex;align-items:end;justify-content:space-between;gap:40px;flex-wrap:wrap">
+<div><h2 style="max-width:20ch;margin-bottom:12px">Comece pelo arquivo que você já tem.</h2><p class="text-muted" style="margin:0;font-size:14px">Nada é publicado. O arquivo é processado e descartado depois da exportação.</p></div>
+<a class="btn btn-primary" href="../curriculo-vivo-app/CurriculoVivoApp.dc.html" style="font-size:15px;padding:10px 20px">Atualizar meu currículo</a>
+</div>
+<hr class="hr" style="margin:40px 0 20px">
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+<span class="text-muted" style="font-size:12px;margin-right:auto">© 2026 Currículo Vivo</span>
+<a href="#" style="font-size:12px">Privacidade</a>
+<a href="#" style="font-size:12px">Termos</a>
+<a href="../curriculo-vivo/CurriculoVivo.dc.html" style="font-size:12px">Proposta de design</a>
+</div>
+</section>
+</div>
+</div>
+</x-dc>
+</body>
+</html>

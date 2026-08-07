@@ -1,0 +1,132 @@
+/* Top bar do produto. Medidas do handoff; cores, dos tokens. */
+
+/*
+ * Fixa no topo: a barra carrega a pontuação de ATS e o caminho de volta, que valem
+ * durante toda a rolagem — no currículo longo da revisão os dois sumiam justamente
+ * enquanto se decidia o que aceitar.
+ *
+ * Entre o resumo do marcador (20) e o modal (50): a barra passa por cima do papel, mas
+ * nunca por cima de um diálogo.
+ */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 46px;
+  padding: 12px 24px;
+  background: var(--color-header);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.brand {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-accent);
+}
+
+/* Divisor vertical entre a marca e o caminho de volta. */
+.divider {
+  width: 1px;
+  height: 16px;
+  background: var(--color-divider);
+}
+
+.back {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-neutral-400);
+  text-decoration: none;
+}
+
+/* Empurra o que é da direita para a direita, seja qual for o que houver à esquerda. */
+.trailing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+/* ── Chip de pontuação de ATS ────────────────────────────────────────────── */
+
+.ats {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+.atsLabel {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+.atsValue {
+  font-size: 15px;
+}
+
+.atsOutOf {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/*
+ * Largura fixa: as dez barras dividem os 56px entre si, então a régua não muda de
+ * tamanho conforme a nota sobe — o que muda é só quantas estão acesas.
+ */
+.atsBars {
+  display: flex;
+  gap: 2px;
+  width: 56px;
+}
+
+.atsBarOn,
+.atsBarOff {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.atsBarOn {
+  background: var(--color-accent);
+}
+
+.atsBarOff {
+  background: var(--color-neutral-800);
+}
+
+.langToggle {
+  display: flex;
+  gap: var(--space-1);
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.lang,
+.langOn {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  border: 0;
+  cursor: pointer;
+}
+
+.lang {
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.langOn {
+  background: var(--color-accent-600);
+  color: var(--color-accent-100);
+}

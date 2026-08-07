@@ -1,0 +1,47 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 34px 36px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  background: var(--color-header);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.corpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.nome {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legenda {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.percentual {
+  margin-left: auto;
+  flex: none;
+  font-size: 13px;
+  color: var(--color-neutral-600);
+}
+
+.reload {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  margin: 0;
+}

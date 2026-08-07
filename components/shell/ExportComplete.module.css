@@ -1,0 +1,116 @@
+/* A medida da coluna vem de `Shell.module.css`; aqui só o arranjo interno. */
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  animation: entrar 0.26s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-accent-900);
+  color: var(--color-accent-400);
+}
+
+.title {
+  margin: 0;
+}
+
+.thanks {
+  font-size: 14px;
+  opacity: 0.82;
+  margin: var(--space-1) 0 0;
+}
+
+.warning {
+  font-size: 13px;
+  color: var(--color-accent-400);
+  margin: calc(-1 * var(--space-2)) 0 0;
+}
+
+.block,
+.noteBlock {
+  width: 100%;
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+}
+
+.block {
+  background: var(--color-header);
+}
+
+.noteBlock {
+  background: var(--color-card);
+}
+
+.blockTitle {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 var(--space-3);
+}
+
+.fileList,
+.noteList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+.noteList {
+  list-style: disc;
+  padding-left: var(--space-6);
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fileIcon {
+  flex: none;
+  color: var(--color-accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .column {
+    animation: none;
+  }
+}
