@@ -73,12 +73,10 @@ async function lerItens(data: Uint8Array): Promise<Leitura> {
 
   // A loading task é quem libera os recursos no fim — `destroy()` é dela, não do
   // documento.
-  const tarefa = pdfjs.getDocument({
-    data,
-    // Só precisamos do texto: as fontes do sistema bastam e evitam baixar as
-    // embutidas, que não usamos para nada aqui.
-    useSystemFonts: true,
-  });
+  // Só precisamos do texto e das posições: nunca renderizamos página nenhuma, então
+  // não há por que resolver fontes (de sistema ou embutidas) — em Node isso força o
+  // pdfjs a depender de "@napi-rs/canvas", que não é uma dependência do projeto.
+  const tarefa = pdfjs.getDocument({ data });
 
   let documento;
   try {

@@ -67,53 +67,30 @@ export async function POST(request: Request) {
 
     fileName = arquivo.name;
     bytes = new Uint8Array(await arquivo.arrayBuffer());
-  } catch (error) {
-    console.error("Erro ao ler o formulário:", error);
-
-    return erro(
-      "invalid-request",
-      "Não foi possível ler o formulário enviado.",
-      400,
-    );
+  } catch {
+    return erro("invalid-request", "Não foi possível ler o formulário enviado.", 400);
   }
 
   try {
-    console.log("===== Resume Import =====");
-    console.log({
-      hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
-      fileName,
-      fileSize: bytes.length,
-      nodeVersion: process.version,
-    });
-
     const { resume, report } = await importResume(bytes, { fileName });
-
-    console.log("Importação concluída com sucesso.");
-
     return NextResponse.json({ resume, report });
   } catch (error) {
     if (error instanceof ImportError) {
+      // Log sem conteúdo do currículo: só o motivo e os detalhes seguros.
       console.warn("resume-import: falha de arquivo", {
         reason: error.reason,
         ...error.detail,
       });
-
-      return erro(
-        error.reason,
-        error.message,
-        STATUS_POR_MOTIVO[error.reason],
-      );
+      return erro(error.reason, error.message, STATUS_POR_MOTIVO[error.reason]);
     }
 
     if (error instanceof RewriteDetectedError) {
-      console.warn(
-        "resume-import: a IA reescreveu conteúdo nas duas tentativas",
-        {
-          field: error.field,
-          divergence: error.divergence,
-        },
-      );
-
+      // Campo e forma da divergência. O texto do currículo nunca vai para o log — e
+      // truncá-lo não desidentificaria nada.
+      console.warn("resume-import: a IA reescreveu conteúdo nas duas tentativas", {
+        field: error.field,
+        divergence: error.divergence,
+      });
       return erro(
         "rewrite-detected",
         "A organização automática alterou o texto do currículo, o que não é permitido nesta etapa. Tente novamente.",
@@ -122,35 +99,14 @@ export async function POST(request: Request) {
     }
 
     if (error instanceof AiError) {
-      console.warn("resume-import: falha de IA", {
-        reason: error.reason,
-        message: error.message,
-      });
-
-      return erro(
-        error.reason,
-        error.message,
-        STATUS_POR_MOTIVO_IA[error.reason],
-      );
+      console.warn("resume-import: falha de IA", { reason: error.reason });
+      return erro(error.reason, error.message, STATUS_POR_MOTIVO_IA[error.reason]);
     }
 
-    // LOG COMPLETO DO ERRO
-    console.error("===== ERRO INESPERADO =====");
-    console.error(error);
-
-    if (error instanceof Error) {
-      console.error({
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
-    }
-
-    return erro(
-      "unexpected",
-      "Não foi possível importar o currículo.",
-      500,
-    );
+    console.error("resume-import: falha inesperada", {
+      name: (error as Error).name,
+    });
+    return erro("unexpected", "Não foi possível importar o currículo.", 500);
   } finally {
     // Sem referência ao buffer, ele fica elegível para coleta imediatamente.
     bytes = new Uint8Array(0);
