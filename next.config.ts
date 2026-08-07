@@ -25,7 +25,12 @@ const nextConfig: NextConfig = {
     // O binário nativo da plataforma (ex.: @napi-rs/canvas-linux-x64-gnu) é um pacote
     // irmão de @napi-rs/canvas, resolvido via optionalDependencies — precisa do glob
     // amplo, não só da pasta do pacote principal.
-    "/api/resume-import": ["./node_modules/@napi-rs/**/*"],
+    // O worker do pdfjs é carregado por caminho em tempo de execução, nunca por um
+    // import estático — o rastreamento não o enxerga e ele fica de fora do bundle.
+    "/api/resume-import": [
+      "./node_modules/@napi-rs/**/*",
+      "./node_modules/pdfjs-dist/legacy/build/**/*",
+    ],
   },
 };
 
