@@ -55,6 +55,20 @@ describe("Ordem do conteúdo produzida pela IA", () => {
     expect(order.education).toEqual([...eduIds].reverse());
   });
 
+  test("Ordem sem chave de formação é aceita como lista vazia", async () => {
+    // Currículo sem formação: a ordem vazia devolvida por omissão da chave bate
+    // exatamente com o que `minimalResume.education` espera — nenhum recurso é
+    // necessário.
+    const jobId = minimalResume.jobs[0].id as string;
+    const resposta = { jobs: [jobId], bullets: [] };
+
+    const order = await organizarCom(resposta, minimalResume);
+
+    expect(order.education).toEqual([]);
+    // O resto da ordem foi aceito normalmente — não caiu no recurso cronológico.
+    expect(order.jobs).toEqual([jobId]);
+  });
+
   test("Currículo sem experiência e sem formação não chama a IA", async () => {
     const vazio = { ...minimalResume, jobs: [], education: [] };
 

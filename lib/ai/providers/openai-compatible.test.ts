@@ -110,7 +110,7 @@ describe("Saída estruturada", () => {
       type: "json_schema",
       json_schema: {
         name: "curriculo",
-        strict: true,
+        strict: false,
         schema: {
           type: "object",
           properties: { resumo: { type: ["string", "null"] } },
@@ -124,6 +124,24 @@ describe("Saída estruturada", () => {
   test("sem schema, não vai response_format", async () => {
     await createGroqProvider().generate(PERGUNTA);
     expect(chamadas[0].body.response_format).toBeUndefined();
+  });
+
+  test("Provedor compatível com a OpenAI não recusa por chave ausente que a validação da camada aceita", async () => {
+    // `strict: false` é o que impede o provedor de recusar a chamada inteira só porque o
+    // modelo deixou de citar uma chave do schema — a decisão passa a ser de quem valida a
+    // resposta do nosso lado, não do provedor.
+    await createGroqProvider().generate(PERGUNTA, {
+      responseSchema: {
+        type: "object",
+        properties: { education: { type: "array", items: { type: "string" } } },
+      },
+      schemaName: "ordem",
+    });
+
+    const jsonSchema = chamadas[0].body.response_format as {
+      json_schema: { strict: boolean };
+    };
+    expect(jsonSchema.json_schema.strict).toBe(false);
   });
 });
 

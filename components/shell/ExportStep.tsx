@@ -149,10 +149,12 @@ export function ExportStep({
           comum é a mesma da cota esgotada — um limite da IA, não um defeito do app. O tom
           âmbar é o mesmo já usado ali.
         */}
-        <WarningNotice>{progresso.error}</WarningNotice>
-        <Button variant="secondary" onClick={() => acoes.reset()}>
-          {t.progress.retry}
-        </Button>
+        <div className={styles.stepNotice}>
+          <WarningNotice>{progresso.error}</WarningNotice>
+          <Button variant="secondary" onClick={() => acoes.reset()}>
+            {t.progress.retry}
+          </Button>
+        </div>
       </div>
     );
   }

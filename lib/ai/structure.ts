@@ -43,14 +43,24 @@ export const StructuredResumeSchema = z.object({
       bullets: z.array(z.string()),
     }),
   ),
-  education: z.array(
-    z.object({
-      course: z.string(),
-      school: z.string(),
-      period: z.string(),
-    }),
-  ),
-  skills: z.string().nullable(),
+  // `.optional()` + `.transform`: o provedor pode gerar uma resposta sem citar a chave (ver
+  // `lib/ai/providers/openai-compatible.ts`), e os dois campos podem legitimamente estar
+  // vazios num currículo real — ausência não é resposta fora do esquema.
+  education: z
+    .array(
+      z.object({
+        course: z.string(),
+        school: z.string(),
+        period: z.string(),
+      }),
+    )
+    .optional()
+    .transform((valor) => valor ?? []),
+  skills: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((valor) => valor ?? null),
 });
 
 export type StructuredResume = z.infer<typeof StructuredResumeSchema>;

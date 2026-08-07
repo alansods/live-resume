@@ -94,6 +94,30 @@ describe("Estruturação do modelo pela IA", () => {
     ).rejects.toMatchObject({ reason: "missing-credentials" });
   });
 
+  test("Resposta sem formação estrutura currículo com lista vazia", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+    const semFormacao: Record<string, unknown> = { ...respostaDoCurriculoCompleto };
+    delete semFormacao.education;
+    const client = recordedClient(semFormacao);
+
+    const structured = await structureResume(blocks, { client });
+    const resume = buildResume(structured);
+
+    expect(resume.education).toEqual([]);
+  });
+
+  test("Resposta sem habilidades estrutura currículo com habilidades vazias", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+    const semHabilidades: Record<string, unknown> = { ...respostaDoCurriculoCompleto };
+    delete semHabilidades.skills;
+    const client = recordedClient(semHabilidades);
+
+    const structured = await structureResume(blocks, { client });
+    const resume = buildResume(structured);
+
+    expect(resume.skills).toBeNull();
+  });
+
   test("Testes não chamam a IA real", () => {
     // Nenhum provedor da cadeia tem credencial no ambiente de teste, então qualquer
     // chamada real falharia antes de sair da máquina. A verificação é sobre a cadeia

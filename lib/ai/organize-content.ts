@@ -75,7 +75,12 @@ const RawOrderSchema = z.strictObject({
       bulletIds: z.array(z.string()),
     }),
   ),
-  education: z.array(z.string()),
+  // Ausente vira lista vazia: o provedor pode gerar uma resposta sem citar a chave (ver
+  // `lib/ai/providers/openai-compatible.ts`), e currículo sem formação é um caso legítimo.
+  education: z
+    .array(z.string())
+    .optional()
+    .transform((valor) => valor ?? []),
 });
 
 type RawOrder = z.infer<typeof RawOrderSchema>;

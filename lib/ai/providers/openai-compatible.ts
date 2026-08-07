@@ -91,7 +91,11 @@ export function createOpenAiCompatibleProvider(
                   type: "json_schema" as const,
                   json_schema: {
                     name: options.schemaName ?? "resposta",
-                    strict: true,
+                    // Sem `strict: true`: o provedor pode gerar uma resposta sem citar toda
+                    // chave do schema (ex.: `education`/`skills` vazios), e a validação de
+                    // quem chama decide o que fazer — em vez do provedor recusar a resposta
+                    // inteira antes de nos devolver qualquer JSON.
+                    strict: false,
                     schema: toStrictJsonSchema(options.responseSchema),
                   },
                 },
