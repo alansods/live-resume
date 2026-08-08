@@ -397,6 +397,54 @@
   border-top: 1px solid var(--color-divider);
 }
 
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+
+/*
+ * O stepper em linha não cabe num telefone com os recuos de desktop: em 375px, quatro
+ * passos com rótulo ocupam ~320px, e após os 48px de cada lado sobrava menos que isso —
+ * a régua transbordava para fora da tela. Em vez de esconder os rótulos (o nome é o que
+ * o stepper conta), o recuo cai para 20px e os passos apertam: rótulo 11px, botão com
+ * recuo menor e conector com mínimo menor. A coluna de conteúdo acompanha o recuo novo —
+ * a régua foi definida para coincidir com a borda da coluna, e sem o ajuste os círculos
+ * ficariam 28px para fora do que há abaixo deles.
+ */
+@media (max-width: 640px) {
+  .stepper {
+    padding: 18px 20px 0;
+    /* Raro demais para uma linha própria: em telas estreitas demais a régua rola, e o
+       conteúdo da página não transborda junto. */
+    overflow-x: auto;
+  }
+
+  .step {
+    padding: 4px 6px;
+  }
+
+  .stepLabel,
+  .stepLabelDone,
+  .stepLabelOn {
+    font-size: 11px;
+  }
+
+  .link,
+  .linkDone {
+    min-width: 6px;
+    margin: 19px 2px 0;
+  }
+
+  .stepColumn {
+    padding: 30px 20px 48px;
+  }
+
+  .waiting {
+    padding: 0 20px 18px;
+  }
+
+  .stepNav {
+    padding: 20px 20px 0;
+  }
+}
+
 @keyframes stepIn {
   from {
     opacity: 0;
