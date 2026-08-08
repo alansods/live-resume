@@ -2,6 +2,27 @@
 
 Update your existing resume, review AI suggestions, and export to DOCX or PDF.
 
+## Development methodology
+
+This project follows **Spec-Driven Development (SDD)** using [OpenSpec](https://github.com/openspec-dev/openspec) with [OpenCode](https://github.com/opencode-ai/opencode) as the AI coding assistant.
+
+Features are implemented as isolated **changes**, each with:
+
+- A **proposal** describing the capability and acceptance criteria
+- **Delta specs** defining requirements as verifiable scenarios
+- **Tasks** broken down from the specs
+
+The workflow per change:
+
+```bash
+npx openspec propose    # create proposal.md, tasks.md, and delta specs
+# review and approve before coding
+npx openspec apply      # implement following tasks.md
+npx openspec archive    # merge specs and move change to archive
+```
+
+All specs and change history live under `openspec/`.
+
 ## What it does
 
 A resume that grows with your career: imports your current file (PDF or DOCX), accepts free-text updates, and uses AI to restructure, suggest improvements, and translate for export in multiple languages and formats.
