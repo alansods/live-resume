@@ -18,6 +18,7 @@ const pt = {
     title: "Atualizar",
     subtitle:
       "Escreva solto, com números quando tiver. O que já está no arquivo continua lá.",
+    blocked: "Corrija os campos marcados antes de avançar.",
   },
   sections: {
     education: "Formação e certificações",
@@ -287,6 +288,7 @@ const en: Dictionary = {
     title: "Update",
     subtitle:
       "Write freely, with numbers when you have them. What is already in the file stays there.",
+    blocked: "Fix the flagged fields before continuing.",
   },
   sections: {
     education: "Education and certifications",

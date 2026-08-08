@@ -7,6 +7,7 @@ import type { Resume } from "@/lib/resume/schema";
 import type { Suggestion } from "@/lib/suggestions/model";
 import { emptyIntake, type IntakeContent } from "@/lib/update-intake/content";
 import { mergeIntake } from "@/lib/update-intake/merge";
+import { conteudoValido } from "@/lib/update-intake/valid";
 
 /**
  * Estado do fluxo.
@@ -39,6 +40,12 @@ export type FlowState = {
   report: ImportReport | null;
   /** O que o usuário digitou na etapa 02. */
   intake: IntakeContent;
+  /**
+   * O que a etapa 02 emitiu é válido (identificadores preenchidos, datas legíveis).
+   * Sem isto o fluxo avançaria com item quebrado — data ilegível vira período quebrado
+   * no currículo em trabalho.
+   */
+  intakeValid: boolean;
   /** Sugestões, pedidas uma vez ao entrar na revisão. `null` = ainda não pedidas. */
   suggestions: Suggestion[] | null;
   requiresDateNotice: boolean;
@@ -68,6 +75,7 @@ export const initialFlowState: FlowState = {
   fileName: null,
   report: null,
   intake: emptyIntake,
+  intakeValid: true,
   suggestions: null,
   requiresDateNotice: false,
   suggestionsFailure: null,
@@ -80,20 +88,32 @@ export const initialFlowState: FlowState = {
 /**
  * Sem currículo importado não se sai da etapa 01.
  *
- * É a única trava do fluxo. Passar pela etapa 02 sem digitar nada é legítimo — talvez
- * nada tenha mudado —, e pela 03 sem marcar nada também: a geração ainda reformata o
- * documento inteiro.
+ * É a primeira trava do fluxo. A segunda é a etapa 02: avançar dela exige conteúdo
+ * válido — o que ela emite vira período do currículo em trabalho, e data ilegível
+ * entraria como período quebrado. Passar pela etapa 02 sem digitar nada continua
+ * legítimo (talvez nada tenha mudado), e pela 03 sem marcar nada também: a geração
+ * ainda reformata o documento inteiro.
  */
 export function canLeaveImport(state: FlowState): boolean {
   return state.imported !== null;
 }
 
+/**
+ * Chega-se a uma etapa se a de antes já foi aberta. Voltar nunca é travado; ir à 03
+ * ou 04 a partir da 02 (ou antes dela) exige conteúdo válido na 02.
+ */
 export function canGoTo(state: FlowState, step: Step): boolean {
-  return step === 1 || canLeaveImport(state);
+  if (!canLeaveImport(state)) return step === 1;
+  if (step > 2 && state.step <= 2 && !state.intakeValid) return false;
+  return true;
 }
 
 export function canGoNext(state: FlowState): boolean {
-  return state.step < 4 && canLeaveImport(state);
+  return (
+    state.step < 4 &&
+    canLeaveImport(state) &&
+    (state.step !== 2 || state.intakeValid)
+  );
 }
 
 export function canGoBack(state: FlowState): boolean {
@@ -137,6 +157,7 @@ export function withResume(
     fileName,
     report,
     intake: emptyIntake,
+    intakeValid: true,
     suggestions: null,
     requiresDateNotice: false,
     suggestionsFailure: null,
@@ -144,9 +165,9 @@ export function withResume(
   };
 }
 
-/** O que a etapa 02 emitiu. */
+/** O que a etapa 02 emitiu. A validade acompanha o conteúdo: item quebrado trava o fluxo. */
 export function withIntake(state: FlowState, intake: IntakeContent): FlowState {
-  return { ...state, intake };
+  return { ...state, intake, intakeValid: conteudoValido(intake) };
 }
 
 export function withSuggestions(

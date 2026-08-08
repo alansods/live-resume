@@ -641,7 +641,6 @@ describe("O que foi digitado na etapa 02 alimenta o fluxo", () => {
     expect(papel.getByText(/Cooperativa Aurora/)).toBeTruthy();
     expect(papel.getByText(/Reduzi o tempo de atendimento em 30%\./)).toBeTruthy();
   });
-
   test("O que foi digitado chega à exportação", async () => {
     mockarFetch();
     montar();
@@ -688,6 +687,40 @@ describe("O que foi digitado na etapa 02 alimenta o fluxo", () => {
     await waitFor(() => expect(enviadoParaExport).toHaveLength(1));
 
     expect(enviadoParaExport[0].resume!.jobs).toHaveLength(importedResume.jobs.length);
+  });
+
+  test("Data ilegível na etapa 02 trava o avanço até ser corrigida", async () => {
+    mockarFetch();
+    montar();
+    await importar();
+
+    irPara(/2\. Atualizar/);
+    digitarExperiencia("Cooperativa Aurora");
+
+    // Edita o Início do cartão para uma data quebrada: o item emitido fica inválido.
+    const inicio = screen.getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "13/2022" } });
+
+    // A etapa 02 não se cruza: nem pelo Avançar, nem pelo salto no stepper.
+    expect(screen.getByRole("button", { name: "Avançar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByRole("button", { name: /3\. Revisar/ })).toHaveProperty(
+      "disabled",
+      true,
+    );
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Corrija os campos marcados antes de avançar.",
+    );
+
+    // Corrigir a data libera o fluxo de novo.
+    fireEvent.change(inicio, { target: { value: "03/2022" } });
+    expect(screen.getByRole("button", { name: "Avançar" })).toHaveProperty(
+      "disabled",
+      false,
+    );
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
 

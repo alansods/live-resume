@@ -389,19 +389,28 @@ export function UpdateIntake({
   );
 }
 
-/** Campo de data com validação na saída, sem máscara que reescreve o que se digita. */
+/**
+ * Campo de data com validação na saída, sem máscara que reescreve o que se digita.
+ *
+ * Aceita um `error` vindo de fora (a validação do modal, recalculada a cada tecla):
+ * quando presente, ele manda — é o erro ao vivo, sem depender de sair do campo. O
+ * erro local de saída fica como garantia para os campos fora do modal, que não têm
+ * validação externa.
+ */
 function DateField({
   label,
   value,
   onChange,
   width,
   disabled,
+  error: errorExterno,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
   width?: number;
   disabled?: boolean;
+  error?: string;
 }) {
   const t = useT();
   const [erro, setErro] = useState<string | undefined>(undefined);
@@ -412,7 +421,7 @@ function DateField({
       value={value}
       placeholder={t.dates.format}
       disabled={disabled}
-      error={erro}
+      error={errorExterno ?? erro}
       style={width ? { width } : { flex: 1 }}
       onChange={(event) => {
         onChange(event.target.value);
@@ -486,6 +495,11 @@ function AddModal({
       label={t.fields[label]}
       value={String(state.draft[field] ?? "")}
       disabled={field === "end" && ongoing}
+      error={
+        validacao.dateError && validacao.dateError.field === field
+          ? validacao.dateError.message
+          : undefined
+      }
       onChange={(value) => dispatch({ type: "updateDraft", field, value })}
     />
   );
@@ -551,11 +565,6 @@ function AddModal({
               })
             }
           />
-          {validacao.dateError && validacao.dateError.field === "end" ? (
-            <span role="alert" style={{ fontSize: 11 }}>
-              {validacao.dateError.message}
-            </span>
-          ) : null}
         </>
       ) : null}
     </Modal>

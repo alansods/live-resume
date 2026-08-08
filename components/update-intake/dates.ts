@@ -1,6 +1,6 @@
 import type { Translations } from "@/lib/i18n/dictionary";
-import { parseMonthYear, parsePeriod, type YearMonth } from "@/lib/resume/period";
-import { typed } from "@/lib/resume/origin";
+import { resultadoDaData } from "@/lib/update-intake/valid";
+import type { YearMonth } from "@/lib/resume/period";
 import type { ItemKind } from "./state";
 
 /**
@@ -14,9 +14,6 @@ import type { ItemKind } from "./state";
  * concordem sobre o que é uma data válida.
  */
 
-const ANO_MINIMO = 1900;
-const ANO_MAXIMO = 2200;
-
 export type DateValidation =
   | { valid: true; value: YearMonth }
   | { valid: false; message: string }
@@ -24,52 +21,20 @@ export type DateValidation =
 
 /** Campo vazio não é erro: é ausência, e quem exige preenchimento é o formulário. */
 export function validateMonthYear(raw: string, t: Translations): DateValidation {
-  const texto = raw.trim();
-  if (texto.length === 0) return { valid: true, value: null };
-
-  // Só ano: o caso que a importação também recusa completar sozinha.
-  if (/^\d{4}$/.test(texto)) {
-    return { valid: false, message: t.dates.missingMonth };
-  }
-
-  // Formato numérico: mês fora da faixa tem mensagem própria.
-  const numerico = /^(\d{1,2})\s*\/\s*(\d{4})$/.exec(texto);
-  if (numerico) {
-    const month = Number(numerico[1]);
-    const year = Number(numerico[2]);
-
-    if (month < 1 || month > 12) {
+  const resultado = resultadoDaData(raw);
+  if (resultado.ok) return { valid: true, value: resultado.valor };
+  switch (resultado.motivo) {
+    case "soAno":
+      return { valid: false, message: t.dates.missingMonth };
+    case "mesFora":
       return { valid: false, message: t.dates.invalidMonth };
-    }
-    if (year < ANO_MINIMO || year > ANO_MAXIMO) {
+    case "invalido":
       return { valid: false, message: t.dates.invalidFormat };
-    }
-
-    // Confere contra o parser do modelo: se ele não reconhece, nós também não.
-    const periodo = parsePeriod(`${numerico[1]}/${year}`, typed);
-    if (periodo.start === null || periodo.start.month === null) {
-      return { valid: false, message: t.dates.invalidFormat };
-    }
-
-    return { valid: true, value: { month, year } };
   }
-
-  // Nome do mês em inglês: Mar 2022, March 2022, mar/2022. O parser do modelo é a
-  // mesma regra, então o que ele reconhece, nós reconhecemos.
-  const porNome = parseMonthYear(texto);
-  if (porNome === null) {
-    return { valid: false, message: t.dates.invalidFormat };
-  }
-
-  const periodo = parsePeriod(`${porNome.month}/${porNome.year}`, typed);
-  if (periodo.start === null || periodo.start.month === null) {
-    return { valid: false, message: t.dates.invalidFormat };
-  }
-
-  return { valid: true, value: porNome };
 }
 
-function indice(data: YearMonth): number {
+function indice(data: YearMonth | null): number {
+  if (!data) return 0;
   return data.year * 12 + (data.month - 1);
 }
 
@@ -90,7 +55,7 @@ export function validateRange(
   if (!inicio.valid || !fim.valid) return { valid: true };
   if (inicio.value === null || fim.value === null) return { valid: true };
 
-  return indice(fim.value) < indice(inicio.value)
+  return indice(fim.value!) < indice(inicio.value!)
     ? { valid: false, message: t.dates.endBeforeStart }
     : { valid: true };
 }

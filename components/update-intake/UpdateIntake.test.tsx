@@ -293,6 +293,72 @@ describe("Datas na tela", () => {
     );
     expect(inicio.getAttribute("aria-invalid")).toBe("true");
   });
+
+  test("Mês inválido é marcado ao digitar, sem precisar sair do campo", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    const inicio = within(modal).getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "13/2022" } });
+
+    // A validação do modal é recalculada a cada tecla: o erro aparece junto, e o
+    // botão de confirmar já sabe que o item não pode nascer.
+    expect(within(modal).getByRole("alert").textContent).toBe(
+      "Mês precisa estar entre 01 e 12.",
+    );
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+  });
+
+  test("Corrigir a data limpa o erro ao vivo", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    const inicio = within(modal).getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "13/2022" } });
+    expect(within(modal).getByRole("alert").textContent).toBe(
+      "Mês precisa estar entre 01 e 12.",
+    );
+
+    fireEvent.change(inicio, { target: { value: "03/2022" } });
+
+    expect(within(modal).queryByRole("alert")).toBeNull();
+    expect(inicio.getAttribute("aria-invalid")).toBeNull();
+  });
+
+  test("Fim anterior ao início é marcado no campo Fim", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    fireEvent.change(within(modal).getByLabelText("Curso"), {
+      target: { value: "Pós em Dados" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Instituição"), {
+      target: { value: "USP" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Início"), {
+      target: { value: "03/2022" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Conclusão"), {
+      target: { value: "01/2021" },
+    });
+
+    // O erro de faixa mora no campo do fim, que é onde a correção se faz.
+    const conclusao = within(modal).getByLabelText("Conclusão");
+    expect(conclusao.getAttribute("aria-invalid")).toBe("true");
+    expect(within(modal).getByRole("alert").textContent).toBe(
+      "O fim não pode ser anterior ao início.",
+    );
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+  });
 });
 
 describe("Interface bilíngue na etapa", () => {

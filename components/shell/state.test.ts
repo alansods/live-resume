@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { importedResume } from "@/fixtures/resumes";
+import { newItemId } from "@/lib/resume/ids";
+import type { IntakeContent } from "@/lib/update-intake/content";
 import {
   back,
   canGoBack,
@@ -10,17 +12,36 @@ import {
   next,
   toggleFormat,
   toggleLocale,
+  withIntake,
   withResume,
   withSelection,
   withSuggestions,
 } from "./state";
 
 /**
- * A trava do fluxo é uma só: sem currículo importado não se sai da etapa 01. Nas outras
- * não há trava — passar pela 02 sem digitar e pela 03 sem marcar é legítimo.
+ * As travas do fluxo: sem currículo importado não se sai da etapa 01; e a etapa 02 só
+ * se cruza com conteúdo válido. Nas outras não há trava — passar pela 03 sem marcar é
+ * legítimo.
  */
 
 const comCurriculo = withResume(initialFlowState, importedResume, "curriculo.docx");
+
+/** Uma experiência com data ilegível: é o item que quebraria o currículo em trabalho. */
+const conteudoComDataQuebrada: IntakeContent = {
+  education: [],
+  experience: [
+    {
+      id: newItemId(),
+      company: "Acme",
+      role: "Gerente",
+      start: "13/2022",
+      end: "",
+      ongoing: false,
+      delivered: "",
+    },
+  ],
+  skills: [],
+};
 
 describe("Navegação entre as quatro etapas", () => {
   test("A etapa atual é indicada", () => {
@@ -69,6 +90,52 @@ describe("Avançar exige o passo anterior", () => {
     const reimportado = withResume(comTudo, importedResume, "outro.pdf");
     expect(reimportado.suggestions).toBeNull();
     expect(reimportado.selected.size).toBe(0);
+  });
+});
+
+describe("A etapa 02 só se cruza com conteúdo válido", () => {
+  test("Conteúdo quebrado trava o avanço", () => {
+    const naEtapa2 = next(comCurriculo);
+    const comQuebra = withIntake(naEtapa2, conteudoComDataQuebrada);
+
+    expect(comQuebra.intakeValid).toBe(false);
+    expect(canGoNext(comQuebra)).toBe(false);
+    expect(next(comQuebra).step).toBe(2);
+  });
+
+  test("Conteúdo quebrado trava o salto para a revisão e a exportação", () => {
+    const naEtapa2 = next(comCurriculo);
+    const comQuebra = withIntake(naEtapa2, conteudoComDataQuebrada);
+
+    for (const etapa of [3, 4] as const) {
+      expect(canGoTo(comQuebra, etapa), `etapa ${etapa}`).toBe(false);
+      expect(goTo(comQuebra, etapa).step).toBe(2);
+    }
+  });
+
+  test("Conteúdo quebrado não trava voltar nem a etapa 02", () => {
+    const naEtapa2 = next(comCurriculo);
+    const comQuebra = withIntake(naEtapa2, conteudoComDataQuebrada);
+
+    expect(canGoTo(comQuebra, 1)).toBe(true);
+    expect(canGoTo(comQuebra, 2)).toBe(true);
+    expect(canGoBack(comQuebra)).toBe(true);
+    expect(back(comQuebra).step).toBe(1);
+  });
+
+  test("Corrigir a data libera o avanço", () => {
+    const naEtapa2 = next(comCurriculo);
+    const comQuebra = withIntake(naEtapa2, conteudoComDataQuebrada);
+    const corrigido: IntakeContent = {
+      ...conteudoComDataQuebrada,
+      experience: [
+        { ...conteudoComDataQuebrada.experience[0], start: "03/2022" },
+      ],
+    };
+
+    const liberado = withIntake(comQuebra, corrigido);
+    expect(liberado.intakeValid).toBe(true);
+    expect(canGoNext(liberado)).toBe(true);
   });
 });
 

@@ -224,7 +224,16 @@ export function AppShell() {
 
       {emTrabalho !== null ? (
         <>
-          {etapa(2, <UpdateIntake onChange={receberIntake} />)}
+          {etapa(2, (
+            <>
+              <UpdateIntake onChange={receberIntake} />
+              {!state.intakeValid ? (
+                <div className={styles.waiting}>
+                  <WarningNotice>{t.step2.blocked}</WarningNotice>
+                </div>
+              ) : null}
+            </>
+          ))}
           {etapa(
             3,
             analise.mode === "running" ? (
