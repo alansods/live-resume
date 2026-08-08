@@ -6,9 +6,9 @@ import type { ItemKind } from "./state";
 /**
  * Validação das datas digitadas na etapa 02.
  *
- * Toda data tem mês e ano. O campo aceita o que o usuário escreve e valida quando ele
- * sai dali — máscara que reescreve enquanto se digita atrapalha colar, apagar e
- * corrigir, e só impõe o formato em vez de ensiná-lo.
+ * Toda data tem mês e ano. Enquanto se digita, a máscara do campo só insere a barra
+ * de separação (mm/aaaa); a validação acontece ao sair do campo e, no modal, é
+ * recalculada a cada tecla para marcar o erro no próprio campo.
  *
  * A validação reaproveita `parsePeriod` do modelo, para que a etapa 02 e a importação
  * concordem sobre o que é uma data válida.
@@ -69,7 +69,7 @@ const OBRIGATORIOS: Record<ItemKind, readonly string[]> = {
   skill: ["name"],
 };
 
-/** Os campos de data de cada tipo. Vazios são ausência; preenchidos, precisam ser válidos. */
+/** Os campos de data de cada tipo. Vazios seguram o Adicionar; preenchidos, precisam ser válidos. */
 const CAMPOS_DE_DATA: Record<ItemKind, readonly string[]> = {
   education: ["start", "finish"],
   experience: ["start", "end"],
@@ -78,16 +78,17 @@ const CAMPOS_DE_DATA: Record<ItemKind, readonly string[]> = {
 
 export type IntakeValidity = {
   valid: boolean;
-  /** Os obrigatórios que estão vazios — o que mantém o botão desabilitado. */
+  /** Os obrigatórios e as datas vazios — o que mantém o botão desabilitado. */
   missing: readonly string[];
   /** Campo de data preenchido com valor inválido, quando houver. */
   dateError?: { field: string; message: string };
 };
 
 /**
- * O que libera o "Adicionar" do modal: identificadores preenchidos e datas válidas
- * quando preenchidas. Item vazio não é item — quem quer acrescentar de verdade
- * preenche o essencial; data ilegível entraria no currículo como período quebrado.
+ * O que libera o "Adicionar" do modal: identificadores e datas preenchidos e válidos.
+ * Item sem período não é item — quem quer acrescentar de verdade preenche o essencial;
+ * data ilegível entraria no currículo como período quebrado. O fim só é dispensado
+ * quando o item está "em andamento", porque o próprio campo fica desabilitado.
  */
 export function validateIntake(
   kind: ItemKind,
@@ -101,7 +102,11 @@ export function validateIntake(
 
   for (const campo of CAMPOS_DE_DATA[kind]) {
     const valor = texto(campo).trim();
-    if (valor.length === 0) continue;
+    if (valor.length === 0) {
+      if (campo === "end" && ongoing) continue; // em andamento dispensa o fim
+      missing.push(campo);
+      continue;
+    }
 
     const resultado = validateMonthYear(valor, t);
     if (!resultado.valid) {

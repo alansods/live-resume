@@ -390,7 +390,36 @@ export function UpdateIntake({
 }
 
 /**
- * Campo de data com validação na saída, sem máscara que reescreve o que se digita.
+ * Máscara de data enquanto se digita: só insere a barra depois do mês.
+ *
+ * O valor mascarado é função apenas dos dígitos, então apagar, colar e corrigir no
+ * meio continuam naturais. Entrada que não seja só dígitos passa livre — os nomes de
+ * mês em inglês (aceitos pela importação) não podem ser engolidos pela máscara.
+ */
+function mascararData(raw: string): string {
+  if (/[^0-9/]/.test(raw)) return raw;
+  const digitos = raw.replace(/\D/g, "").slice(0, 6);
+  if (digitos.length <= 2) return digitos;
+  return `${digitos.slice(0, 2)}/${digitos.slice(2)}`;
+}
+
+/**
+ * A máscara pode ter inserido a barra antes do cursor: devolve o cursor ao ponto onde
+ * se digitava. O valor novo só existe no DOM depois do render, então a reposição é
+ * adiada para depois do flush.
+ */
+function reporCursor(alvo: HTMLInputElement, mascarado: string) {
+  const caret = alvo.selectionStart ?? mascarado.length;
+  const digitosAntes = alvo.value.slice(0, caret).replace(/\D/g, "").length;
+  const novoCaret = Math.min(
+    digitosAntes <= 2 ? digitosAntes : digitosAntes + 1,
+    mascarado.length,
+  );
+  setTimeout(() => alvo.setSelectionRange(novoCaret, novoCaret), 0);
+}
+
+/**
+ * Campo de data com máscara leve enquanto se digita e validação na saída.
  *
  * Aceita um `error` vindo de fora (a validação do modal, recalculada a cada tecla):
  * quando presente, ele manda — é o erro ao vivo, sem depender de sair do campo. O
@@ -414,6 +443,7 @@ function DateField({
 }) {
   const t = useT();
   const [erro, setErro] = useState<string | undefined>(undefined);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <Field
@@ -421,11 +451,15 @@ function DateField({
       value={value}
       placeholder={t.dates.format}
       disabled={disabled}
+      ref={inputRef}
       error={errorExterno ?? erro}
       style={width ? { width } : { flex: 1 }}
       onChange={(event) => {
-        onChange(event.target.value);
+        const alvo = event.target;
+        const mascarado = mascararData(alvo.value);
         if (erro) setErro(undefined);
+        onChange(mascarado);
+        if (mascarado !== alvo.value) reporCursor(alvo, mascarado);
       }}
       onBlur={(event) => {
         const resultado = validateMonthYear(event.target.value, t);

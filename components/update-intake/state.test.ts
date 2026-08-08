@@ -207,7 +207,7 @@ describe("Botão Adicionar só habilita com o essencial", () => {
     expect(
       validateIntake(
         "experience",
-        campos({ company: "Acme", role: "Dev" }),
+        campos({ company: "Acme", role: "Dev", start: "03/2022", end: "06/2024" }),
         false,
         t,
       ).valid,
@@ -221,7 +221,12 @@ describe("Botão Adicionar só habilita com o essencial", () => {
     expect(
       validateIntake(
         "education",
-        campos({ course: "Engenharia", school: "USP" }),
+        campos({
+          course: "Engenharia",
+          school: "USP",
+          start: "03/2022",
+          finish: "06/2024",
+        }),
         false,
         t,
       ).valid,
@@ -235,17 +240,27 @@ describe("Botão Adicionar só habilita com o essencial", () => {
     );
   });
 
-  test("Data preenchida e inválida bloqueia; vazia, não", () => {
+  test("Data inválida ou vazia bloqueia", () => {
     const base = { company: "Acme", role: "Dev" };
 
     expect(
-      validateIntake("experience", campos({ ...base, start: "13/2022" }), false, t),
+      validateIntake(
+        "experience",
+        campos({ ...base, start: "13/2022", end: "06/2024" }),
+        false,
+        t,
+      ),
     ).toMatchObject({ valid: false, dateError: { field: "start" } });
     expect(
-      validateIntake("experience", campos({ ...base, start: "Mar 2022" }), false, t)
-        .valid,
+      validateIntake(
+        "experience",
+        campos({ ...base, start: "Mar 2022", end: "06/2024" }),
+        false,
+        t,
+      ).valid,
     ).toBe(true);
-    expect(validateIntake("experience", campos(base), false, t).valid).toBe(true);
+    // Vazia também segura: item sem período não é item.
+    expect(validateIntake("experience", campos(base), false, t).valid).toBe(false);
   });
 
   test("Fim antes do início bloqueia", () => {

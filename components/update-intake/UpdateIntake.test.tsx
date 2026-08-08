@@ -33,6 +33,12 @@ function adicionarExperiencia(empresa: string, cargo = "Cargo") {
     target: { value: empresa },
   });
   fireEvent.change(within(modal).getByLabelText("Cargo"), { target: { value: cargo } });
+  fireEvent.change(within(modal).getByLabelText("Início"), {
+    target: { value: "03/2022" },
+  });
+  fireEvent.change(within(modal).getByLabelText("Fim"), {
+    target: { value: "06/2024" },
+  });
   fireEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
 }
 
@@ -180,6 +186,15 @@ describe("Adicionar item pela tela", () => {
     fireEvent.change(within(modal).getByLabelText("Curso"), {
       target: { value: "Pós em Dados" },
     });
+    fireEvent.change(within(modal).getByLabelText("Instituição"), {
+      target: { value: "USP" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Início"), {
+      target: { value: "03/2022" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Conclusão"), {
+      target: { value: "06/2024" },
+    });
     fireEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
 
     for (const campo of ["Curso", "Instituição", "Início", "Conclusão"]) {
@@ -275,6 +290,110 @@ describe("Saída da etapa", () => {
 
     // Digitar sem confirmar não é conteúdo do currículo.
     expect(ultimaEmissao(emitir).experience).toEqual([]);
+  });
+});
+
+describe("Datas obrigatórias no modal", () => {
+  test("Data vazia segura o Adicionar até as duas virem", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    fireEvent.change(within(modal).getByLabelText("Curso"), {
+      target: { value: "Pós em Dados" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Instituição"), {
+      target: { value: "USP" },
+    });
+    // Só o início: ainda falta a conclusão.
+    fireEvent.change(within(modal).getByLabelText("Início"), {
+      target: { value: "03/2022" },
+    });
+
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+
+    fireEvent.change(within(modal).getByLabelText("Conclusão"), {
+      target: { value: "06/2024" },
+    });
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      false,
+    );
+  });
+
+  test("Nenhuma data preenchida também segura o Adicionar", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar experiência/ }));
+    const modal = screen.getByRole("dialog");
+
+    fireEvent.change(within(modal).getByLabelText("Empresa"), {
+      target: { value: "Cooperativa Aurora" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Cargo"), {
+      target: { value: "Gerente" },
+    });
+
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
+  });
+
+  test("Em andamento dispensa o fim", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar experiência/ }));
+    const modal = screen.getByRole("dialog");
+
+    fireEvent.change(within(modal).getByLabelText("Empresa"), {
+      target: { value: "Cooperativa Aurora" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Cargo"), {
+      target: { value: "Gerente" },
+    });
+    fireEvent.change(within(modal).getByLabelText("Início"), {
+      target: { value: "03/2022" },
+    });
+    fireEvent.click(within(modal).getByLabelText("Em andamento"));
+
+    expect(within(modal).getByRole("button", { name: "Adicionar" })).toHaveProperty(
+      "disabled",
+      false,
+    );
+  });
+});
+
+describe("Máscara de data", () => {
+  test("Formata os dígitos enquanto se digita", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    const inicio = within(modal).getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "032022" } });
+    expect(inicio).toHaveProperty("value", "03/2022");
+  });
+
+  test("Já formatado, passa sem reescrita", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    const inicio = within(modal).getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "03/2022" } });
+    expect(inicio).toHaveProperty("value", "03/2022");
+  });
+
+  test("Nome de mês em inglês não é engolido", () => {
+    montar();
+    fireEvent.click(screen.getByRole("button", { name: /Adicionar formação/ }));
+    const modal = screen.getByRole("dialog");
+
+    const inicio = within(modal).getByLabelText("Início");
+    fireEvent.change(inicio, { target: { value: "March 2022" } });
+    expect(inicio).toHaveProperty("value", "March 2022");
   });
 });
 

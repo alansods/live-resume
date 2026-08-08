@@ -614,6 +614,12 @@ function digitarExperiencia(empresa: string, entregas = "") {
   fireEvent.change(within(modal).getByLabelText("Cargo"), {
     target: { value: "Gerente de Operações" },
   });
+  fireEvent.change(within(modal).getByLabelText("Início"), {
+    target: { value: "03/2022" },
+  });
+  fireEvent.change(within(modal).getByLabelText("Fim"), {
+    target: { value: "06/2024" },
+  });
   if (entregas) {
     fireEvent.change(within(modal).getByLabelText(/O que você entregou/), {
       target: { value: entregas },
