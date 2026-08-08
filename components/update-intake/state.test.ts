@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { dictionaries } from "@/lib/i18n/dictionary";
-import { validateMonthYear, validateRange } from "./dates";
+import { validateIntake, validateMonthYear, validateRange } from "./dates";
 import { initialState, intakeReducer, type IntakeState } from "./state";
 
 const t = dictionaries.pt;
@@ -167,8 +167,114 @@ describe("Datas com mês e ano", () => {
     }
   });
 
+  test("Formato em inglês é aceito", () => {
+    expect(validateMonthYear("Mar 2022", t)).toEqual({
+      valid: true,
+      value: { month: 3, year: 2022 },
+    });
+    expect(validateMonthYear("march/2022", t)).toEqual({
+      valid: true,
+      value: { month: 3, year: 2022 },
+    });
+    expect(validateMonthYear("December 2024", t)).toEqual({
+      valid: true,
+      value: { month: 12, year: 2024 },
+    });
+  });
+
+  test("Nome de mês em inglês desconhecido é recusado", () => {
+    expect(validateMonthYear("Foo 2022", t)).toEqual({
+      valid: false,
+      message: t.dates.invalidFormat,
+    });
+  });
+
   test("Campo vazio não é erro", () => {
     expect(validateMonthYear("", t)).toEqual({ valid: true, value: null });
     expect(validateMonthYear("   ", t)).toEqual({ valid: true, value: null });
+  });
+});
+
+describe("Botão Adicionar só habilita com o essencial", () => {
+  const campos = (valores: Record<string, string | boolean>) => (campo: string) =>
+    String(valores[campo] ?? "");
+
+  test("Experiência sem empresa ou cargo não pode ser adicionada", () => {
+    expect(validateIntake("experience", campos({}), false, t).valid).toBe(false);
+    expect(
+      validateIntake("experience", campos({ company: "Acme" }), false, t).valid,
+    ).toBe(false);
+    expect(
+      validateIntake(
+        "experience",
+        campos({ company: "Acme", role: "Dev" }),
+        false,
+        t,
+      ).valid,
+    ).toBe(true);
+  });
+
+  test("Formação sem curso ou instituição não pode ser adicionada", () => {
+    expect(
+      validateIntake("education", campos({ course: "Engenharia" }), false, t).valid,
+    ).toBe(false);
+    expect(
+      validateIntake(
+        "education",
+        campos({ course: "Engenharia", school: "USP" }),
+        false,
+        t,
+      ).valid,
+    ).toBe(true);
+  });
+
+  test("Habilidade sem nome não pode ser adicionada", () => {
+    expect(validateIntake("skill", campos({}), false, t).valid).toBe(false);
+    expect(validateIntake("skill", campos({ name: "Rust" }), false, t).valid).toBe(
+      true,
+    );
+  });
+
+  test("Data preenchida e inválida bloqueia; vazia, não", () => {
+    const base = { company: "Acme", role: "Dev" };
+
+    expect(
+      validateIntake("experience", campos({ ...base, start: "13/2022" }), false, t),
+    ).toMatchObject({ valid: false, dateError: { field: "start" } });
+    expect(
+      validateIntake("experience", campos({ ...base, start: "Mar 2022" }), false, t)
+        .valid,
+    ).toBe(true);
+    expect(validateIntake("experience", campos(base), false, t).valid).toBe(true);
+  });
+
+  test("Fim antes do início bloqueia", () => {
+    const base = { company: "Acme", role: "Dev" };
+
+    expect(
+      validateIntake(
+        "experience",
+        campos({ ...base, start: "03/2022", end: "01/2021" }),
+        false,
+        t,
+      ).valid,
+    ).toBe(false);
+    expect(
+      validateIntake(
+        "experience",
+        campos({ ...base, start: "03/2022", end: "12/2024" }),
+        false,
+        t,
+      ).valid,
+    ).toBe(true);
+  });
+
+  test("Em andamento ignora o fim", () => {
+    const base = { company: "Acme", role: "Dev", start: "03/2022" };
+
+    expect(
+      validateIntake("experience", campos({ ...base, end: "01/2000" }), true, t)
+        .valid,
+    ).toBe(true);
   });
 });

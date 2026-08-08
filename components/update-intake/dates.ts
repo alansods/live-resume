@@ -1,6 +1,7 @@
 import type { Translations } from "@/lib/i18n/dictionary";
-import { parsePeriod, type YearMonth } from "@/lib/resume/period";
+import { parseMonthYear, parsePeriod, type YearMonth } from "@/lib/resume/period";
 import { typed } from "@/lib/resume/origin";
+import type { ItemKind } from "./state";
 
 /**
  * Validação das datas digitadas na etapa 02.
@@ -31,28 +32,41 @@ export function validateMonthYear(raw: string, t: Translations): DateValidation 
     return { valid: false, message: t.dates.missingMonth };
   }
 
-  const separado = /^(\d{1,2})\s*\/\s*(\d{4})$/.exec(texto);
-  if (!separado) {
+  // Formato numérico: mês fora da faixa tem mensagem própria.
+  const numerico = /^(\d{1,2})\s*\/\s*(\d{4})$/.exec(texto);
+  if (numerico) {
+    const month = Number(numerico[1]);
+    const year = Number(numerico[2]);
+
+    if (month < 1 || month > 12) {
+      return { valid: false, message: t.dates.invalidMonth };
+    }
+    if (year < ANO_MINIMO || year > ANO_MAXIMO) {
+      return { valid: false, message: t.dates.invalidFormat };
+    }
+
+    // Confere contra o parser do modelo: se ele não reconhece, nós também não.
+    const periodo = parsePeriod(`${numerico[1]}/${year}`, typed);
+    if (periodo.start === null || periodo.start.month === null) {
+      return { valid: false, message: t.dates.invalidFormat };
+    }
+
+    return { valid: true, value: { month, year } };
+  }
+
+  // Nome do mês em inglês: Mar 2022, March 2022, mar/2022. O parser do modelo é a
+  // mesma regra, então o que ele reconhece, nós reconhecemos.
+  const porNome = parseMonthYear(texto);
+  if (porNome === null) {
     return { valid: false, message: t.dates.invalidFormat };
   }
 
-  const month = Number(separado[1]);
-  const year = Number(separado[2]);
-
-  if (month < 1 || month > 12) {
-    return { valid: false, message: t.dates.invalidMonth };
-  }
-  if (year < ANO_MINIMO || year > ANO_MAXIMO) {
-    return { valid: false, message: t.dates.invalidFormat };
-  }
-
-  // Confere contra o parser do modelo: se ele não reconhece, nós também não.
-  const periodo = parsePeriod(`${separado[1]}/${year}`, typed);
+  const periodo = parsePeriod(`${porNome.month}/${porNome.year}`, typed);
   if (periodo.start === null || periodo.start.month === null) {
     return { valid: false, message: t.dates.invalidFormat };
   }
 
-  return { valid: true, value: { month, year } };
+  return { valid: true, value: porNome };
 }
 
 function indice(data: YearMonth): number {
@@ -79,4 +93,70 @@ export function validateRange(
   return indice(fim.value) < indice(inicio.value)
     ? { valid: false, message: t.dates.endBeforeStart }
     : { valid: true };
+}
+
+// ── O botão "Adicionar" do modal ───────────────────────────────────────────────
+
+/** Os identificadores sem os quais o item não existe, por tipo. */
+const OBRIGATORIOS: Record<ItemKind, readonly string[]> = {
+  education: ["course", "school"],
+  experience: ["company", "role"],
+  skill: ["name"],
+};
+
+/** Os campos de data de cada tipo. Vazios são ausência; preenchidos, precisam ser válidos. */
+const CAMPOS_DE_DATA: Record<ItemKind, readonly string[]> = {
+  education: ["start", "finish"],
+  experience: ["start", "end"],
+  skill: [],
+};
+
+export type IntakeValidity = {
+  valid: boolean;
+  /** Os obrigatórios que estão vazios — o que mantém o botão desabilitado. */
+  missing: readonly string[];
+  /** Campo de data preenchido com valor inválido, quando houver. */
+  dateError?: { field: string; message: string };
+};
+
+/**
+ * O que libera o "Adicionar" do modal: identificadores preenchidos e datas válidas
+ * quando preenchidas. Item vazio não é item — quem quer acrescentar de verdade
+ * preenche o essencial; data ilegível entraria no currículo como período quebrado.
+ */
+export function validateIntake(
+  kind: ItemKind,
+  texto: (campo: string) => string,
+  ongoing: boolean,
+  t: Translations,
+): IntakeValidity {
+  const missing = OBRIGATORIOS[kind].filter(
+    (campo) => texto(campo).trim().length === 0,
+  );
+
+  for (const campo of CAMPOS_DE_DATA[kind]) {
+    const valor = texto(campo).trim();
+    if (valor.length === 0) continue;
+
+    const resultado = validateMonthYear(valor, t);
+    if (!resultado.valid) {
+      return {
+        valid: false,
+        missing,
+        dateError: { field: campo, message: resultado.message },
+      };
+    }
+  }
+
+  const campoFim = kind === "education" ? "finish" : "end";
+  const range = validateRange(texto("start"), texto(campoFim), ongoing, t);
+  if (!range.valid) {
+    return {
+      valid: false,
+      missing,
+      dateError: { field: campoFim, message: range.message },
+    };
+  }
+
+  return { valid: missing.length === 0, missing };
 }

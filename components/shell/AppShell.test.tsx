@@ -692,25 +692,31 @@ describe("O que foi digitado na etapa 02 alimenta o fluxo", () => {
 });
 
 describe("Material do usuário enviado às sugestões", () => {
-  test("Sobra da etapa 02 acompanha o pedido de sugestões", async () => {
+  test("Item sem empresa não é adicionado nem vira sobra", async () => {
     mockarFetch();
     montar();
     await importar();
 
     irPara(/2\. Atualizar/);
-    // Sem empresa não vira experiência do currículo — mas o texto não se perde.
     fireEvent.click(screen.getByRole("button", { name: /Adicionar experiência/ }));
     const modal = screen.getByRole("dialog");
     fireEvent.change(within(modal).getByLabelText("Cargo"), {
       target: { value: "Gerente de Operações" },
     });
-    fireEvent.click(within(modal).getByRole("button", { name: "Adicionar" }));
+
+    // Sem empresa, o botão de adicionar fica desabilitado: o item incompleto nem
+    // nasce — e, por isso, também não sobra texto para as sugestões.
+    const adicionar = within(modal).getByRole("button", { name: "Adicionar" });
+    expect((adicionar as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(adicionar);
+
+    fireEvent.click(within(modal).getByRole("button", { name: "Cancelar" }));
 
     irPara(/3\. Revisar/);
     await waitFor(() => expect(enviadoParaSugestoes).toHaveLength(2));
 
     for (const corpo of enviadoParaSugestoes) {
-      expect(corpo.extraUserText).toContain("Gerente de Operações");
+      expect(corpo.extraUserText).not.toContain("Gerente de Operações");
     }
   });
 

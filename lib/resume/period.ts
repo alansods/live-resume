@@ -96,8 +96,73 @@ const OPEN_END_TOKENS = new Set([
   "today",
 ]);
 
-const MONTH_YEAR = /^(\d{1,2})\/(\d{4})$/;
+const ANO_MINIMO = 1900;
+const ANO_MAXIMO = 2200;
+
 const YEAR_ONLY = /^(\d{4})$/;
+
+/**
+ * Nomes de mês em inglês, completos e abreviados, mapeados para o número do mês.
+ *
+ * Só inglês: o formato do português é numérico (`mm/aaaa`), e o nome por extenso é a
+ * convenção do currículo em inglês. Nada de casar prefixo — "marcos" não é "março".
+ */
+const MONTH_NAMES: Record<string, number> = {
+  jan: 1,
+  january: 1,
+  feb: 2,
+  february: 2,
+  mar: 3,
+  march: 3,
+  apr: 4,
+  april: 4,
+  may: 5,
+  jun: 6,
+  june: 6,
+  jul: 7,
+  july: 7,
+  aug: 8,
+  august: 8,
+  sep: 9,
+  sept: 9,
+  september: 9,
+  oct: 10,
+  october: 10,
+  nov: 11,
+  november: 11,
+  dec: 12,
+  december: 12,
+};
+
+/**
+ * Lê mês + ano de uma data solta: numérico (`03/2022`) ou nome do mês em inglês
+ * (`Mar 2022`, `March 2022`, `mar/2022`).
+ *
+ * O `-` não separa data por extenso porque é o separador de intervalo do período — um
+ * `Mar-2022` partiria o período em pedaços. Ano fora de 1900–2200 não é data.
+ */
+export function parseMonthYear(raw: string): YearMonth | null {
+  const text = raw.trim().toLowerCase();
+  if (text.length === 0) return null;
+
+  const numerico = /^(\d{1,2})\s*\/\s*(\d{4})$/.exec(text);
+  if (numerico) {
+    const month = Number(numerico[1]);
+    const year = Number(numerico[2]);
+    if (month < 1 || month > 12 || year < ANO_MINIMO || year > ANO_MAXIMO) return null;
+    return { month, year };
+  }
+
+  const porNome = /^([a-z]+)(?:\s*\/\s*|\s+)(\d{4})$/.exec(text);
+  if (porNome) {
+    const month = MONTH_NAMES[porNome[1]];
+    const year = Number(porNome[2]);
+    if (month === undefined || year < ANO_MINIMO || year > ANO_MAXIMO) return null;
+    return { month, year };
+  }
+
+  return null;
+}
 
 type ParsedSide =
   | { kind: "yearMonth"; value: YearMonth }
@@ -110,13 +175,8 @@ function parseSide(side: string): ParsedSide {
   if (text.length === 0) return { kind: "unrecognized" };
   if (OPEN_END_TOKENS.has(text)) return { kind: "open" };
 
-  const monthYear = MONTH_YEAR.exec(text);
-  if (monthYear) {
-    const month = Number(monthYear[1]);
-    const year = Number(monthYear[2]);
-    if (month < 1 || month > 12) return { kind: "unrecognized" };
-    return { kind: "yearMonth", value: { month, year } };
-  }
+  const monthYear = parseMonthYear(text);
+  if (monthYear) return { kind: "yearMonth", value: monthYear };
 
   const yearOnly = YEAR_ONLY.exec(text);
   if (yearOnly) {

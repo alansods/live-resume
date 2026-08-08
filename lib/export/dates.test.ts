@@ -25,6 +25,22 @@ describe("Data renderizada no formato do idioma", () => {
     expect(formatPeriodForLocale(emCurso, "en")).toBe("Jan 2025 – Present");
   });
 
+  test("Data digitada em inglês sai no formato do idioma de saída", () => {
+    const emIngles = periodo("Mar 2022 – Dec 2024");
+    expect(emIngles.complete).toBe(true);
+
+    // Exportar em português corrige a apresentação para mm/aaaa.
+    expect(formatPeriodForLocale(emIngles, "pt")).toBe("03/2022 – 12/2024");
+    expect(formatPeriodForLocale(emIngles, "en")).toBe("Mar 2022 – Dec 2024");
+  });
+
+  test("Fim em aberto digitado em inglês usa o rótulo do idioma", () => {
+    const emCurso = periodo("Jan 2025 – Present");
+
+    expect(formatPeriodForLocale(emCurso, "pt")).toBe("01/2025 – atual");
+    expect(formatPeriodForLocale(emCurso, "en")).toBe("Jan 2025 – Present");
+  });
+
   test("Período incompleto sai com o texto do arquivo", () => {
     const semMes = periodo("2018 - 2019");
     expect(semMes.complete).toBe(false);

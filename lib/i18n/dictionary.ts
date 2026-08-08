@@ -77,7 +77,8 @@ const pt = {
     format: "mm/aaaa",
     invalidMonth: "Mês precisa estar entre 01 e 12.",
     missingMonth: "Informe mês e ano, no formato mm/aaaa.",
-    invalidFormat: "Data no formato mm/aaaa.",
+    invalidFormat:
+      "Data no formato mm/aaaa ou mês por extenso em inglês (ex.: Mar 2022).",
     endBeforeStart: "O fim não pode ser anterior ao início.",
   },
   dateNotice: {
@@ -339,7 +340,7 @@ const en: Dictionary = {
     format: "mm/yyyy",
     invalidMonth: "Month must be between 01 and 12.",
     missingMonth: "Enter month and year, as mm/yyyy.",
-    invalidFormat: "Date as mm/yyyy.",
+    invalidFormat: "Date as mm/yyyy or an English month name (e.g., Mar 2022).",
     endBeforeStart: "The end cannot be earlier than the start.",
   },
   dateNotice: {

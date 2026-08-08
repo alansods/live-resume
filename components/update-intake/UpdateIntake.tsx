@@ -8,7 +8,7 @@ import type { Translations } from "@/lib/i18n/dictionary";
 import type { ItemId } from "@/lib/resume/ids";
 import type { IntakeContent } from "@/lib/update-intake/content";
 import shell from "@/components/shell/Shell.module.css";
-import { validateMonthYear, validateRange } from "./dates";
+import { validateIntake, validateMonthYear } from "./dates";
 import { initialState, intakeReducer, type IntakeState, type ItemKind } from "./state";
 import styles from "./UpdateIntake.module.css";
 
@@ -467,9 +467,9 @@ function AddModal({
 
   const fechar = () => dispatch({ type: "closeModal" });
   const ongoing = Boolean(state.draft.ongoing);
-  const intervalo = validateRange(
-    String(state.draft.start ?? ""),
-    String(state.draft.end ?? ""),
+  const validacao = validateIntake(
+    kind,
+    (campo) => String(state.draft[campo] ?? ""),
     ongoing,
     t,
   );
@@ -502,7 +502,7 @@ function AddModal({
           </Button>
           <Button
             onClick={() => dispatch({ type: "confirmDraft" })}
-            disabled={!intervalo.valid}
+            disabled={!validacao.valid}
           >
             {t.modal.confirm}
           </Button>
@@ -551,11 +551,11 @@ function AddModal({
               })
             }
           />
-          {intervalo.valid ? null : (
+          {validacao.dateError && validacao.dateError.field === "end" ? (
             <span role="alert" style={{ fontSize: 11 }}>
-              {intervalo.message}
+              {validacao.dateError.message}
             </span>
-          )}
+          ) : null}
         </>
       ) : null}
     </Modal>

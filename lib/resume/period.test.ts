@@ -51,6 +51,24 @@ describe("Período com mês e ano", () => {
     }
   });
 
+  test("Mês por extenso em inglês é reconhecido", () => {
+    const fechado = parsePeriod("Mar 2022 – December 2024", imported);
+    expect(fechado.complete).toBe(true);
+    expect(fechado.start).toEqual({ month: 3, year: 2022 });
+    expect(fechado.end).toEqual({ month: 12, year: 2024 });
+
+    expect(parsePeriod("Mar/2022 to Jun 2024", imported).complete).toBe(true);
+    expect(parsePeriod("May 2021 - Present", imported).end).toEqual({ open: true });
+    expect(parsePeriod("january 2020 – now", imported).end).toEqual({ open: true });
+  });
+
+  test("Nome de mês em inglês desconhecido não é data", () => {
+    // Nomes em português, ISO e separador de hífen continuam fora.
+    for (const raw of ["março de 2022", "2022-03", "Foo 2022", "Mar-2022"]) {
+      expect(parsePeriod(raw, imported).complete, raw).toBe(false);
+    }
+  });
+
   test("Formato não reconhecido", () => {
     const period = parsePeriod("desde sempre", imported);
 
