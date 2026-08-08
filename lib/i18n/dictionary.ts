@@ -179,6 +179,8 @@ const pt = {
       "Não foi possível iniciar o leitor de PDF. O problema é nosso, não do seu arquivo — tente novamente em instantes.",
     "not-a-resume":
       "Este arquivo não parece ser um currículo. Envie o documento com a sua experiência profissional, em DOCX ou PDF.",
+    "rewrite-detected":
+      "Não foi possível organizar o currículo sem alterar o texto dele. Tente novamente.",
   },
   step1: {
     kicker: "PASSO 01 DE 04",
@@ -414,6 +416,8 @@ const en: Dictionary = {
       "The PDF reader could not start. This one is on us, not on your file — please try again in a moment.",
     "not-a-resume":
       "This file does not look like a resume. Please upload the document with your professional experience, as DOCX or PDF.",
+    "rewrite-detected":
+      "We couldn't organize the resume without altering its text. Please try again.",
   },
   step1: {
     kicker: "STEP 01 OF 04",

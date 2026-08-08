@@ -41,6 +41,7 @@ const MANTEM_A_DROPZONE = new Set([
   "not-a-resume",
   "unsupported-format",
   "file-too-large",
+  "rewrite-detected",
 ]);
 
 /**
@@ -48,9 +49,11 @@ const MANTEM_A_DROPZONE = new Set([
  *
  * Cota: nada quebrou e o arquivo estava certo, só não há chamada disponível agora.
  * Não-currículo: nada quebrou — o arquivo foi lido, só não é um currículo, e a pessoa
- * escolheu o documento errado. As demais recusas ficam no tom de falha (accent).
+ * escolheu o documento errado. Reescrita: o arquivo foi lido, a IA só não conseguiu
+ * copiá-lo sem alterar o texto — reenviar tem chance real. As demais recusas ficam no
+ * tom de falha (accent).
  */
-const TOM_DE_ATENCAO = new Set(["quota-exceeded", "not-a-resume"]);
+const TOM_DE_ATENCAO = new Set(["quota-exceeded", "not-a-resume", "rewrite-detected"]);
 
 const LIMITE_EM_MB = String(Math.round(MAX_FILE_BYTES / (1024 * 1024)));
 

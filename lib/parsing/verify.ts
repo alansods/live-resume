@@ -13,6 +13,14 @@ import type { Block } from "./blocks";
  * contenção é binária e auditável. Ela aceita o que deve aceitar — dividir um
  * parágrafo em dois bullets, descartar o marcador de lista, colapsar espaços — e
  * recusa reformulação, mesmo com o mesmo sentido.
+ *
+ * Há dois regimes. Prosa (resumo, bullets, empresas) é **estrita**: o texto tem de
+ * existir como trecho contíguo. Habilidades são **por palavra**: o campo é, por
+ * natureza, montado de fragmentos espalhados pelo arquivo — a IA coleciona "React"
+ * de um bullet e "AWS" de outro — e exigir contiguidade recusaria essa agregação
+ * legítima. Reescrever uma habilidade quase não existe ("React" não tem paráfrase),
+ * então basta que cada palavra venha do arquivo: qualquer token inventado cai na
+ * mesma trava.
  */
 
 /**
@@ -170,6 +178,91 @@ function assertContido(referencia: string, texto: string, field: string): void {
 }
 
 /**
+ * Conectivos que a IA pode legitimamente acrescentar ao reunir habilidades.
+ *
+ * "React, Vue e Angular" exige o "e" de ligação que o arquivo pode não trazer entre
+ * os dois nomes. Ignorá-los é o que separa a agregação (permitida) da invenção
+ * (recusada): um token que não é conectivo e não veio do arquivo continua sendo
+ * motivo de recusa.
+ */
+const CONECTIVOS = new Set([
+  // português
+  "a",
+  "as",
+  "o",
+  "os",
+  "e",
+  "ou",
+  "de",
+  "do",
+  "da",
+  "dos",
+  "das",
+  "em",
+  "no",
+  "na",
+  "nos",
+  "nas",
+  "com",
+  "sem",
+  "por",
+  "para",
+  "pelo",
+  "pela",
+  "pelos",
+  "pelas",
+  "entre",
+  "um",
+  "uma",
+  "uns",
+  "umas",
+  "nem",
+  // inglês
+  "a",
+  "an",
+  "the",
+  "and",
+  "or",
+  "with",
+  "of",
+  "in",
+  "on",
+  "at",
+  "to",
+  "for",
+  "from",
+  "by",
+  "as",
+  "per",
+  "via",
+]);
+
+/**
+ * Verificação por palavra, só para habilidades.
+ *
+ * O campo agrega tokens de seções distantes do arquivo, então o trecho contíguo não
+ * existe — mas cada token tem de existir. A comparação é palavra a palavra (não
+ * substring, para "back" não provar "backend"), e conectivos de ligação não contam.
+ */
+function assertContidoPorPalavra(referencia: string, texto: string, field: string): void {
+  const alvo = normalizar(texto);
+  // Campo vazio é ausência declarada, não conteúdo inventado.
+  if (alvo.length === 0) return;
+
+  const palavras = new Set(referencia.split(" ").filter((palavra) => palavra.length > 0));
+  const tokens = alvo.split(" ").filter((token) => token.length > 0);
+  const fora = tokens.filter((token) => !CONECTIVOS.has(token) && !palavras.has(token));
+
+  if (fora.length > 0) {
+    throw new RewriteDetectedError(
+      field,
+      texto,
+      classificarDivergencia(referencia, texto),
+    );
+  }
+}
+
+/**
  * Confere que todo texto da resposta veio do arquivo. Falha na primeira violação: uma
  * resposta que reescreveu um trecho não é aproveitável em parte.
  */
@@ -183,7 +276,8 @@ export function assertOnlyExtractedText(
   assertContido(referencia, structured.header.role, "header.role");
   assertContido(referencia, structured.header.contact, "header.contact");
   assertContido(referencia, structured.summary ?? "", "summary");
-  assertContido(referencia, structured.skills ?? "", "skills");
+  // Habilidades são montadas de fragmentos espalhados: verificação por palavra.
+  assertContidoPorPalavra(referencia, structured.skills ?? "", "skills");
 
   structured.jobs.forEach((job, indice) => {
     assertContido(referencia, job.company, `jobs[${indice}].company`);

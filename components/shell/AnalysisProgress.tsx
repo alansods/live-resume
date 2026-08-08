@@ -18,11 +18,7 @@ export const ANALYSIS_STAGES: readonly AnalysisStage[] = [
   "apply-ats",
 ];
 
-export function AnalysisProgress({
-  state,
-}: {
-  state: ProgressState<AnalysisStage>;
-}) {
+export function AnalysisProgress({ state }: { state: ProgressState<AnalysisStage> }) {
   const t = useT();
 
   const rotulos: Record<AnalysisStage, string> = {

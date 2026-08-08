@@ -225,7 +225,7 @@ describe("A IA distribui o texto, não o reescreve", () => {
     const distante = respostaDoCurriculoCompleto.jobs[2].bullets[0];
     const reunido = {
       ...respostaDoCurriculoCompleto,
-      skills: `${primeiro} ${distante}`,
+      summary: `${primeiro} ${distante}`,
     };
 
     expect(() => assertOnlyExtractedText(reunido, blocks)).not.toThrow();
@@ -237,26 +237,83 @@ describe("A IA distribui o texto, não o reescreve", () => {
     // Dois fragmentos: o primeiro veio do arquivo, o segundo foi reescrito. Basta um.
     const meioReescrito = {
       ...respostaDoCurriculoCompleto,
-      skills: `${respostaDoCurriculoCompleto.jobs[0].bullets[0]} Domínio pleno de arquitetura distribuída.`,
+      summary: `${respostaDoCurriculoCompleto.jobs[0].bullets[0]} Domínio pleno de arquitetura distribuída.`,
     };
 
     expect(() => assertOnlyExtractedText(meioReescrito, blocks)).toThrow(
       RewriteDetectedError,
     );
-    expect(() => assertOnlyExtractedText(meioReescrito, blocks)).toThrow(/skills/);
+    expect(() => assertOnlyExtractedText(meioReescrito, blocks)).toThrow(/summary/);
   });
 
-  test("Colagem de palavras soltas é recusada", async () => {
+  test("Colagem de palavras soltas em prosa é recusada", async () => {
     const blocks = await blocosDo("curriculo-completo.docx");
 
     // Cada pedaço existe no arquivo; nenhum é longo o bastante para ser prova. Sem o
-    // piso de tamanho, esta colagem passaria — e a trava viraria enfeite.
+    // piso de tamanho, esta colagem passaria — e a trava viraria enfeite. Em prosa a
+    // regra continua estrita.
+    const colagem = {
+      ...respostaDoCurriculoCompleto,
+      summary: "Go. Python. AWS. Kafka.",
+    };
+
+    expect(() => assertOnlyExtractedText(colagem, blocks)).toThrow(RewriteDetectedError);
+  });
+
+  test("Colagem de palavras soltas em habilidades é aceita", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+
+    // O caso real que derrubou currículos (ex.: "Conhecimentos" com cada habilidade
+    // numa linha): a IA agrega no campo tokens que existem espalhados pelo arquivo.
+    // Toda palavra veio do documento — a trava por palavra deixa passar.
     const colagem = {
       ...respostaDoCurriculoCompleto,
       skills: "Go. Python. AWS. Kafka.",
     };
 
-    expect(() => assertOnlyExtractedText(colagem, blocks)).toThrow(RewriteDetectedError);
+    expect(() => assertOnlyExtractedText(colagem, blocks)).not.toThrow();
+  });
+
+  test("Habilidades agregadas de seções distantes são aceitas", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+
+    // Agregação realista: a ordem do campo não existe contígua no arquivo, mas cada
+    // token sim — inclusive os que vêm de trechos separados por outras seções.
+    const agregadas = {
+      ...respostaDoCurriculoCompleto,
+      skills: "PostgreSQL, Terraform, Go, AWS, Kafka",
+    };
+
+    expect(() => assertOnlyExtractedText(agregadas, blocks)).not.toThrow();
+  });
+
+  test("Habilidade inventada é recusada", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+
+    // Uma palavra que não existe em lugar nenhum do arquivo continua derrubando:
+    // a trava por palavra existe exatamente para isso.
+    const comInventada = {
+      ...respostaDoCurriculoCompleto,
+      skills: "Go, Python, AWS, GraphQL",
+    };
+
+    expect(() => assertOnlyExtractedText(comInventada, blocks)).toThrow(
+      RewriteDetectedError,
+    );
+    expect(() => assertOnlyExtractedText(comInventada, blocks)).toThrow(/skills/);
+  });
+
+  test("Conectivo fora do arquivo não recusa habilidades", async () => {
+    const blocks = await blocosDo("curriculo-completo.docx");
+
+    // "or" não aparece no arquivo: é conectivo de ligação entre os tokens, ignorado
+    // pela verificação por palavra.
+    const comConectivo = {
+      ...respostaDoCurriculoCompleto,
+      skills: "Go or Python or AWS",
+    };
+
+    expect(() => assertOnlyExtractedText(comConectivo, blocks)).not.toThrow();
   });
 });
 

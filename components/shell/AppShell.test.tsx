@@ -1261,6 +1261,39 @@ describe("Cota esgotada é anunciada como tal", () => {
     expect(aviso.textContent).not.toMatch(/currículo/i);
   });
 
+  test("Reescrita pela IA mantém a dropzone e usa tom de atenção", async () => {
+    mockarFetch({
+      import: {
+        ok: false,
+        body: {
+          error: {
+            code: "rewrite-detected",
+            message: "A organização automática alterou o texto do currículo.",
+          },
+        },
+      },
+    });
+    montar();
+
+    fireEvent.change(screen.getByLabelText("Selecionar arquivo"), {
+      target: { files: [new File(["x"], "curriculo.pdf")] },
+    });
+
+    // A mensagem do dicionário, e não a do servidor (que é jargão interno): a pessoa
+    // precisa saber que o arquivo dela está certo e que reenviar tem chance real.
+    const aviso = await screen.findByRole("alert");
+    expect(aviso.textContent).toMatch(/sem alterar o texto/i);
+    expect(aviso.textContent).not.toMatch(/organização automática/i);
+
+    // Tom de atenção, não de falha: nada quebrou — o arquivo foi lido, a IA só não
+    // conseguiu copiá-lo sem alterar o texto.
+    expect(aviso.className).toMatch(/warning/i);
+
+    // E a dropzone continua na tela: o próximo passo é tentar de novo, e ele se faz
+    // aqui mesmo, sem um botão no caminho.
+    expect(screen.getByLabelText("Selecionar arquivo")).toHaveProperty("disabled", false);
+  });
+
   test("Falha que não é de cota mantém o aviso genérico", async () => {
     mockarFetch({
       import: {
