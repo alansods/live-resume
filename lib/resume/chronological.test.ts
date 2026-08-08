@@ -27,7 +27,7 @@ function job(id: string, raw: string, bullets: string[] = []): Job {
 
 function resumeCom(jobs: Job[]): Resume {
   return {
-    header: { name: "Teste", role: "", contact: "" },
+    header: { name: "Teste", role: "", contact: [] },
     summary: null,
     jobs,
     education: [],
