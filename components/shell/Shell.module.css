@@ -287,10 +287,58 @@
   color: var(--color-accent);
 }
 
-/* A confirmação usa o accent claro, como no protótipo. */
-.checkIcon {
+.importedCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-success);
+  background: var(--color-card);
+}
+
+.importedIcon {
   flex-shrink: 0;
-  color: var(--color-accent-400);
+  color: var(--color-success);
+}
+
+.importedInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.importedTitle {
+  font-size: 18px;
+}
+
+.importedFile {
+  font-size: 13px;
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.removeButton {
+  margin-left: auto;
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+  transition: background-color 0.22s ease, color 0.22s ease;
+}
+
+.removeButton:hover {
+  background: var(--color-neutral-900);
+  color: var(--color-text);
 }
 
 .dropOr {
@@ -315,17 +363,6 @@
   width: 1px;
   height: 1px;
   opacity: 0;
-}
-
-.imported {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  background: var(--color-accent-900);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  margin-top: var(--space-6);
-  font-size: 13px;
 }
 
 .error,

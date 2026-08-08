@@ -165,6 +165,27 @@ export function withResume(
   };
 }
 
+/**
+ * Remover o arquivo importado: nada de currículo, e tudo que dependia dele cai junto.
+ *
+ * É o que o botão de remover da etapa 01 aciona — a pessoa desiste do arquivo e sobe outro.
+ */
+export function clearResume(state: FlowState): FlowState {
+  return {
+    ...state,
+    imported: null,
+    fileName: null,
+    report: null,
+    intake: emptyIntake,
+    intakeValid: true,
+    suggestions: null,
+    requiresDateNotice: false,
+    suggestionsFailure: null,
+    selected: new Set(),
+    exportCompletion: null,
+  };
+}
+
 /** O que a etapa 02 emitiu. A validade acompanha o conteúdo: item quebrado trava o fluxo. */
 export function withIntake(state: FlowState, intake: IntakeContent): FlowState {
   return { ...state, intake, intakeValid: conteudoValido(intake) };

@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, FileArrowUp } from "@phosphor-icons/react";
+import { CheckCircle, FileArrowUp, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui";
 import { FailureNotice, WarningNotice } from "@/components/ui/Notice";
 import { useRef, useState } from "react";
@@ -78,9 +78,11 @@ type Props = {
    * completar. Descartá-lo aqui deixava a seção de datas invisível.
    */
   onImported: (resume: Resume, fileName: string, report: ImportReport | null) => void;
+  /** Limpar o arquivo importado e voltar à dropzone para subir outro. */
+  onClear: () => void;
 };
 
-export function ImportStep({ fileName, onImported }: Props) {
+export function ImportStep({ fileName, onImported, onClear }: Props) {
   const t = useT();
   const input = useRef<HTMLInputElement>(null);
   const [nomeEmProgresso, setNomeEmProgresso] = useState<string | null>(null);
@@ -147,6 +149,22 @@ export function ImportStep({ fileName, onImported }: Props) {
             {t.step1.tryAgain}
           </Button>
         </div>
+      ) : fileName !== null ? (
+        <div className={styles.importedCard}>
+          <CheckCircle size={28} className={styles.importedIcon} aria-hidden />
+          <div className={styles.importedInfo}>
+            <strong className={styles.importedTitle}>{t.step1.imported}</strong>
+            <span className={styles.importedFile}>{fileName}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.removeButton}
+            onClick={onClear}
+            aria-label={t.step1.removeFile}
+          >
+            <X size={16} aria-hidden />
+          </button>
+        </div>
       ) : (
         <div
           className={sobre ? styles.dropzoneOver : styles.dropzone}
@@ -197,12 +215,6 @@ export function ImportStep({ fileName, onImported }: Props) {
         </div>
       ) : null}
 
-      {fileName !== null && !emProgresso ? (
-        <p className={styles.imported}>
-          <CheckCircle size={18} className={styles.checkIcon} aria-hidden />
-          <strong>{t.step1.imported}</strong> {fileName}
-        </p>
-      ) : null}
     </div>
   );
 }

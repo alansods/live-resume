@@ -1502,8 +1502,12 @@ describe("Fidelidade ao design do shell", () => {
     expect(svgsDe(screen.getByRole("button", { name: "Avançar" })).length).toBe(1);
 
     await importar();
-    // A confirmação da importação.
-    expect(svgsDe(screen.getByText(/curriculo\.docx/)).length).toBe(1);
+    // A confirmação da importação: check da mensagem + X de remover.
+    const confirmacao = container.querySelector("[class*=importedCard]")!;
+    expect(svgsDe(confirmacao).length).toBe(2);
+    expect(
+      svgsDe(screen.getByRole("button", { name: "Remover arquivo" })).length,
+    ).toBe(1);
 
     // Etapa 04: legendas e botão de download.
     irPara(/4\. Exportar/);
@@ -1699,11 +1703,29 @@ describe("Progresso de importação por etapa nomeada", () => {
 
   test("Concluída, a importação troca o progresso pela confirmação", async () => {
     mockarFetch();
-    montar();
+    const { container } = montar();
     await importar();
 
     expect(screen.queryByRole("status")).toBeNull();
     expect(screen.getByText("Currículo importado")).toBeTruthy();
+    // A dropzone sai da tela: o cartão de confirmação a substitui.
+    expect(container.querySelector("[class*=dropzone]")).toBeNull();
+    expect(screen.getByRole("button", { name: "Remover arquivo" })).toBeTruthy();
+  });
+
+  test("Remover o arquivo volta à dropzone e retrava o fluxo", async () => {
+    mockarFetch();
+    montar();
+    await importar();
+
+    fireEvent.click(screen.getByRole("button", { name: "Remover arquivo" }));
+
+    expect(screen.queryByText("Currículo importado")).toBeNull();
+    expect(screen.getByLabelText("Selecionar arquivo")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Avançar" })).toHaveProperty(
+      "disabled",
+      true,
+    );
   });
 
   test("Falha na importação oferece nova tentativa", async () => {

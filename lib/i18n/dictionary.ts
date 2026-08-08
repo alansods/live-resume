@@ -192,6 +192,7 @@ const pt = {
     choose: "Selecionar arquivo",
     imported: "Currículo importado",
     tryAgain: "Enviar outro arquivo",
+    removeFile: "Remover arquivo",
   },
   step4: {
     kicker: "PASSO 04 DE 04",
@@ -430,6 +431,7 @@ const en: Dictionary = {
     choose: "Choose file",
     imported: "Resume imported",
     tryAgain: "Send another file",
+    removeFile: "Remove file",
   },
   step4: {
     kicker: "STEP 04 OF 04",

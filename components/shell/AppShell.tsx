@@ -31,6 +31,7 @@ import {
   canGoNext,
   canGoTo,
   clearExportCompletion,
+  clearResume,
   goTo,
   initialFlowState,
   next,
@@ -219,6 +220,7 @@ export function AppShell() {
           onImported={(resume, fileName, report) =>
             setState((atual) => withResume(atual, resume, fileName, report))
           }
+          onClear={() => setState((atual) => clearResume(atual))}
         />,
       )}
 
