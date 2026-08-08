@@ -1226,6 +1226,11 @@ describe("Cota esgotada é anunciada como tal", () => {
     const aviso = await screen.findByRole("alert");
     expect(aviso.textContent).toMatch(/não parece ser um currículo/i);
 
+    // Tom de atenção, não de falha: nada quebrou — o arquivo foi lido, só não é um
+    // currículo. O ícone de aviso acompanha o tom âmbar.
+    expect(aviso.className).toMatch(/warning/i);
+    expect(aviso.querySelector("svg")).toBeTruthy();
+
     // E a dropzone continua na tela: o próximo passo é escolher outro arquivo, e ele se
     // faz aqui mesmo, sem um botão no caminho.
     expect(screen.getByLabelText("Selecionar arquivo")).toHaveProperty("disabled", false);

@@ -35,9 +35,6 @@ import styles from "./Shell.module.css";
  *
  * As demais falhas ficam como estavam: rede fora e leitor de PDF que não subiu pedem
  * "tente de novo", não "escolha outro" — para essas, o botão é o controle certo.
- *
- * Cota entra aqui pelo mesmo motivo de sempre, e é a única em tom de atenção: nada
- * quebrou e o arquivo estava certo, só não há chamada disponível agora.
  */
 const MANTEM_A_DROPZONE = new Set([
   "quota-exceeded",
@@ -45,6 +42,15 @@ const MANTEM_A_DROPZONE = new Set([
   "unsupported-format",
   "file-too-large",
 ]);
+
+/**
+ * Recusas em tom de atenção (âmbar), não de falha.
+ *
+ * Cota: nada quebrou e o arquivo estava certo, só não há chamada disponível agora.
+ * Não-currículo: nada quebrou — o arquivo foi lido, só não é um currículo, e a pessoa
+ * escolheu o documento errado. As demais recusas ficam no tom de falha (accent).
+ */
+const TOM_DE_ATENCAO = new Set(["quota-exceeded", "not-a-resume"]);
 
 const LIMITE_EM_MB = String(Math.round(MAX_FILE_BYTES / (1024 * 1024)));
 
@@ -100,7 +106,7 @@ export function ImportStep({ fileName, onImported }: Props) {
             : mensagemDaRecusa(t, code, corpo?.error?.message);
 
         if (MANTEM_A_DROPZONE.has(code)) {
-          setAviso({ atencao: code === "quota-exceeded", texto });
+          setAviso({ atencao: TOM_DE_ATENCAO.has(code), texto });
           acoes.reset();
           return;
         }
