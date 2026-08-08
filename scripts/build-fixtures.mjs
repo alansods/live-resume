@@ -81,6 +81,20 @@ function titulo(text) {
   return new Paragraph({ text, heading: HeadingLevel.HEADING_2 });
 }
 
+/**
+ * Parágrafo de contato com soft breaks (Shift+Enter) entre as linhas — exatamente o
+ * caso que o parsing precisa reproduzir como blocos separados. O mammoth converte
+ * esses breaks em `<br/>`, e o parser os separa.
+ */
+function paragrafoDeContato() {
+  return new Paragraph({
+    children: header.contact.map(
+      (linha, indice) =>
+        new TextRun({ text: linha, break: indice > 0 ? 1 : undefined }),
+    ),
+  });
+}
+
 /** Currículo com as entregas como itens de lista — o caso normal. */
 function docxComListas(titles) {
   const filhos = [
@@ -88,7 +102,7 @@ function docxComListas(titles) {
       children: [new TextRun({ text: header.name, bold: true, size: 32 })],
     }),
     paragrafo(header.role),
-    paragrafo(header.contact),
+    paragrafoDeContato(),
     titulo(titles.summary),
     paragrafo(summary),
     titulo(titles.experience),
@@ -124,7 +138,7 @@ function docxSemListas() {
     new Paragraph({
       children: [new TextRun({ text: header.name, bold: true, size: 32 })],
     }),
-    paragrafo(header.contact),
+    paragrafoDeContato(),
     titulo(sectionTitles.experience),
   ];
 
@@ -201,7 +215,11 @@ function linhasDoCurriculo(titles = sectionTitles) {
   const linhas = [
     { text: header.name, bold: true, size: 18 },
     { text: header.role, size: 11 },
-    { text: header.contact, size: 9, espacoDepois: 10 },
+    ...header.contact.map((linha) => ({
+      text: linha,
+      size: 9,
+      espacoDepois: linha === header.contact[header.contact.length - 1] ? 10 : 0,
+    })),
     { text: titles.summary, bold: true, size: 11 },
     { text: summary, espacoDepois: 10 },
     { text: titles.experience, bold: true, size: 11 },
@@ -268,7 +286,11 @@ async function pdfDuasColunas() {
 
   const esquerda = [
     { text: header.name, bold: true, size: 16 },
-    { text: header.contact, size: 8, espacoDepois: 10 },
+    ...header.contact.map((linha) => ({
+      text: linha,
+      size: 8,
+      espacoDepois: linha === header.contact[header.contact.length - 1] ? 10 : 0,
+    })),
     { text: sectionTitles.skills, bold: true, size: 11 },
     { text: skills, espacoDepois: 10 },
     { text: sectionTitles.education, bold: true, size: 11 },

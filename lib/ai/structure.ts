@@ -32,7 +32,7 @@ export const StructuredResumeSchema = z.object({
   header: z.object({
     name: z.string(),
     role: z.string(),
-    contact: z.string(),
+    contact: z.array(z.string().min(1)),
   }),
   summary: z.string().nullable(),
   jobs: z.array(
@@ -75,7 +75,7 @@ export const structuredResumeJsonSchema: Record<string, unknown> = {
       properties: {
         name: { type: "string" },
         role: { type: "string" },
-        contact: { type: "string" },
+        contact: { type: "array", items: { type: "string" } },
       },
       required: ["name", "role", "contact"],
     },
@@ -128,6 +128,8 @@ Regras invioláveis:
    Nesse caso remonte a ordem de leitura correta: cada bullet pertence à experiência
    cujo cabeçalho o antecede na mesma coluna.
 5. Preserve a ordem em que as experiências e formações aparecem no currículo.
+6. Contato é um ARRAY: cada linha (email, LinkedIn, telefone, endereço) é um elemento
+   próprio, na ordem em que aparece. Nunca una linhas com espaços ou separadores.
 
 Antes de distribuir, diga em "documentKind" que documento é este:
 - "resume": um currículo, CV ou resumo profissional, de QUALQUER área e em qualquer

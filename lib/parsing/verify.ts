@@ -274,7 +274,9 @@ export function assertOnlyExtractedText(
 
   assertContido(referencia, structured.header.name, "header.name");
   assertContido(referencia, structured.header.role, "header.role");
-  assertContido(referencia, structured.header.contact, "header.contact");
+  for (const [indice, linha] of structured.header.contact.entries()) {
+    assertContido(referencia, linha, `header.contact[${indice}]`);
+  }
   assertContido(referencia, structured.summary ?? "", "summary");
   // Habilidades são montadas de fragmentos espalhados: verificação por palavra.
   assertContidoPorPalavra(referencia, structured.skills ?? "", "skills");

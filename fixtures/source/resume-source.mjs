@@ -13,7 +13,11 @@
 export const header = {
   name: "Marina Alencar",
   role: "Engenheira de Software",
-  contact: "marina.alencar@email.com · (11) 98888-1234 · São Paulo, SP",
+  /**
+   * Cada linha numa entrada própria — no DOCX elas viram um parágrafo só com soft
+   * breaks (Shift+Enter), que é exatamente o caso que o parsing precisa reproduzir.
+   */
+  contact: ["marina.alencar@email.com", "(11) 98888-1234", "São Paulo, SP"],
 };
 
 export const summary =

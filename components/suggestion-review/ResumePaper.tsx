@@ -127,8 +127,14 @@ export function ResumePaper({ resume, marks, onFocus }: Props) {
       {resume.header.role ? (
         <p className={styles.paperRole}>{resume.header.role}</p>
       ) : null}
-      {resume.header.contact ? (
-        <p className={styles.paperContact}>{resume.header.contact}</p>
+      {resume.header.contact.length > 0 ? (
+        <p className={styles.paperContact}>
+          {resume.header.contact.map((linha) => (
+            <span key={linha} className={styles.paperContactLine}>
+              {linha}
+            </span>
+          ))}
+        </p>
       ) : null}
 
       {resume.summary !== null ? (

@@ -14,11 +14,13 @@ describe("Extração de PDF", () => {
 
     // Cada uma destas linhas chega do pdfjs partida em vários fragmentos: a
     // reconstrução tem de devolvê-las inteiras, com um espaço em cada junção e
-    // nenhum a mais.
+    // nenhum a mais. O contato vem em três linhas separadas no arquivo.
     for (const esperada of [
       "Marina Alencar",
       "Engenheira de Software",
-      "marina.alencar@email.com · (11) 98888-1234 · São Paulo, SP",
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
       "Experiência profissional",
       "Tech Lead — Fintech Kobo",
       "01/2025 – atual",

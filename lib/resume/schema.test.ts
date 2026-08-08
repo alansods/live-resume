@@ -61,6 +61,28 @@ describe("Estrutura canônica do currículo", () => {
       "bullet-kobo-lead-2",
     ]);
   });
+
+  test("Contato é lista ordenada de linhas não vazias", () => {
+    const result = ResumeSchema.parse(importedResume);
+    expect(result.header.contact).toEqual([
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
+    ]);
+  });
+
+  test("Linha de contato vazia é rejeitada", () => {
+    const comVazio = structuredClone(importedResume);
+    comVazio.header.contact.push("");
+
+    const result = ResumeSchema.safeParse(comVazio);
+    expect(result.success).toBe(false);
+  });
+
+  test("Sem contato é lista vazia, não string vazia", () => {
+    const result = ResumeSchema.parse(minimalResume);
+    expect(result.header.contact).toEqual([]);
+  });
 });
 
 describe("Identidade estável de item", () => {

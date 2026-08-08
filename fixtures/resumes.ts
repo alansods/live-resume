@@ -30,7 +30,11 @@ export const importedResume: Resume = {
   header: {
     name: "Marina Alencar",
     role: "Engenheira de Software",
-    contact: "marina.alencar@email.com · (11) 98888-1234 · São Paulo, SP",
+    contact: [
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
+    ],
   },
   summary: text(
     "Engenheira back-end com experiência em plataformas de pagamento, liderando squads e cuidando de performance.",
@@ -131,7 +135,11 @@ export const nonIndexableResume: Resume = {
   header: {
     name: "Rui Barbosa Nogueira",
     role: "Enfermeiro",
-    contact: "rui.nogueira@email.com · (21) 97777-4321 · Niterói, RJ",
+    contact: [
+      "rui.nogueira@email.com",
+      "(21) 97777-4321",
+      "Niterói, RJ",
+    ],
   },
   summary: text(
     "Profissional proativo, dinâmico e apaixonado por desafios, sempre em busca de novos aprendizados e de um ambiente que valorize o trabalho em equipe.",
@@ -166,7 +174,7 @@ export const nonIndexableResume: Resume = {
 
 /** Só o obrigatório: sem resumo, sem formação e sem habilidades. */
 export const minimalResume: Resume = {
-  header: { name: "Joana Ribeiro", role: "", contact: "" },
+  header: { name: "Joana Ribeiro", role: "", contact: [] },
   summary: null,
   jobs: [
     {

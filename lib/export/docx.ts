@@ -56,8 +56,8 @@ export function documentLines(resume: Resume, locale: Locale): Linha[] {
   const linhas: Linha[] = [{ tipo: "nome", texto: resume.header.name }];
 
   if (resume.header.role) linhas.push({ tipo: "cargo", texto: resume.header.role });
-  if (resume.header.contact) {
-    linhas.push({ tipo: "contato", texto: resume.header.contact });
+  for (const linha of resume.header.contact) {
+    linhas.push({ tipo: "contato", texto: linha });
   }
 
   const secao = (key: SectionKey) => ({

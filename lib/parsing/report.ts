@@ -111,7 +111,7 @@ function findUnusedText(resume: Resume, blocks: Block[]): string[] {
   const campos = [
     resume.header.name,
     resume.header.role,
-    resume.header.contact,
+    ...resume.header.contact,
     resume.summary?.text ?? "",
     resume.skills?.text ?? "",
     ...resume.jobs.flatMap((job) => [

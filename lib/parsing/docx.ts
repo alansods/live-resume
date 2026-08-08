@@ -38,14 +38,20 @@ function decodificar(texto: string): string {
     );
 }
 
-/** Remove a formatação inline (`strong`, `em`, `a`, `br`) e deixa o texto. */
-function textoDe(html: string): string {
-  return decodificar(
-    html
-      .replace(/<br\s*\/?>/gi, " ")
-      .replace(/<[^>]+>/g, "")
-      .replace(/\s+/g, " "),
-  ).trim();
+/**
+ * Remove a formatação inline (`strong`, `em`, `a`, `br`) e deixa o texto.
+ *
+ * Soft break (`<br>`) separa linhas: cada segmento vira um bloco próprio em vez de ser
+ * colapsado num espaço — é o que mantém email, LinkedIn e telefone em linhas
+ * separadas quando o DOCX usa Shift+Enter no bloco de contato.
+ */
+function textoDe(html: string): string[] {
+  return html
+    .split(/<br\s*\/?>/gi)
+    .map((parte) =>
+      decodificar(parte.replace(/<[^>]+>/g, "").replace(/\s+/g, " ")).trim(),
+    )
+    .filter((texto) => texto.length > 0);
 }
 
 function kindDe(tag: string): BlockKind {
@@ -71,9 +77,10 @@ export async function extractDocx(buffer: Buffer): Promise<ExtractedDocument> {
 
   const blocks: Block[] = [];
   for (const match of html.matchAll(BLOCO)) {
-    const text = textoDe(match[2]);
-    if (text.length === 0) continue;
-    blocks.push({ text, kind: kindDe(match[1]) });
+    const kind = kindDe(match[1]);
+    for (const text of textoDe(match[2])) {
+      blocks.push({ text, kind });
+    }
   }
 
   if (blocks.length === 0) {

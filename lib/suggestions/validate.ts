@@ -52,7 +52,7 @@ export function userMaterial(resume: Resume, extra: string[] = []): string {
   return [
     resume.header.name,
     resume.header.role,
-    resume.header.contact,
+    ...resume.header.contact,
     resume.summary?.text ?? "",
     resume.skills?.text ?? "",
     ...resume.jobs.flatMap((job) => [

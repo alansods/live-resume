@@ -267,7 +267,7 @@ describe("DOCX no modelo padrão", () => {
 
     for (const trecho of [
       importedResume.header.name,
-      importedResume.header.contact,
+      ...importedResume.header.contact,
       importedResume.summary!.text,
       importedResume.skills!.text,
       "Fintech Kobo",

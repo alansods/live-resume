@@ -14,7 +14,11 @@ export const respostaDoCurriculoCompleto: StructuredResume = {
   header: {
     name: "Marina Alencar",
     role: "Engenheira de Software",
-    contact: "marina.alencar@email.com · (11) 98888-1234 · São Paulo, SP",
+    contact: [
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
+    ],
   },
   summary:
     "Engenheira back-end com experiência em plataformas de pagamento, liderando squads e cuidando de performance.",
@@ -82,7 +86,11 @@ export const respostaDoCurriculoEmDuasColunas: StructuredResume = {
   header: {
     name: "Marina Alencar",
     role: "",
-    contact: "marina.alencar@email.com · (11) 98888-1234 · São Paulo, SP",
+    contact: [
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
+    ],
   },
   summary: null,
   jobs: [
@@ -127,7 +135,7 @@ export const respostaComTextoInventado: StructuredResume = {
  */
 export const respostaDeDocumentoQueNaoECurriculo: StructuredResume = {
   documentKind: "not-a-resume",
-  header: { name: "", role: "", contact: "" },
+  header: { name: "", role: "", contact: [] },
   summary: null,
   jobs: [],
   education: [],

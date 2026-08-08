@@ -47,6 +47,29 @@ describe("Importação de DOCX", () => {
     expect(blocks.some((block) => block.text.includes("antifraude"))).toBe(true);
   });
 
+  test("Soft breaks separam linhas de contato em blocos próprios", async () => {
+    const { blocks } = await extractDocx(fixture("curriculo-completo.docx"));
+    const textos = blocks.map((block) => block.text);
+
+    // Shift+Enter no DOCX vira `<br>`, e cada segmento precisa sobreviver como bloco
+    // separado — é o que impede email, LinkedIn e telefone de colapsarem numa linha.
+    for (const linha of [
+      "marina.alencar@email.com",
+      "(11) 98888-1234",
+      "São Paulo, SP",
+    ]) {
+      expect(textos, linha).toContain(linha);
+    }
+
+    // E a ordem entre eles é a do documento.
+    expect(textos.indexOf("marina.alencar@email.com")).toBeLessThan(
+      textos.indexOf("(11) 98888-1234"),
+    );
+    expect(textos.indexOf("(11) 98888-1234")).toBeLessThan(
+      textos.indexOf("São Paulo, SP"),
+    );
+  });
+
   test("Acentuação e caracteres especiais sobrevivem", async () => {
     const { blocks } = await extractDocx(fixture("curriculo-completo.docx"));
     const textos = blocks.map((block) => block.text).join("\n");

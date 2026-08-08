@@ -12,11 +12,17 @@ import { TextValueSchema } from "./origin";
  * estritos, então `{ pt, en }` no lugar de um texto é erro de validação.
  */
 
-/** Cabeçalho: nenhuma sugestão o endereça, então é texto simples. */
+/**
+ * Cabeçalho: nenhuma sugestão o endereça, então é texto simples.
+ *
+ * Contato é uma lista ordenada de linhas não vazias — email, LinkedIn, telefone, cada
+ * um na sua linha. A separação importa: no arquivo original elas vieram em linhas
+ * distintas (Shift+Enter no DOCX), e o export precisa reproduzir essa estrutura.
+ */
 export const HeaderSchema = z.strictObject({
   name: z.string().min(1),
   role: z.string(),
-  contact: z.string(),
+  contact: z.array(z.string().min(1)),
 });
 
 export const BulletSchema = z.strictObject({
