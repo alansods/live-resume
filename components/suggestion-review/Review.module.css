@@ -63,7 +63,7 @@
 .paperName {
   font-size: 22px;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 var(--space-2);
 }
 
 .paperRole {
