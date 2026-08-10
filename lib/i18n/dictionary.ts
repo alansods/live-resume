@@ -182,6 +182,7 @@ const pt = {
       "Este arquivo não parece ser um currículo. Envie o documento com a sua experiência profissional, em DOCX ou PDF.",
     "rewrite-detected":
       "Não foi possível organizar o currículo sem alterar o texto dele. Tente novamente.",
+    "payment-required": "É preciso confirmar o pagamento antes de importar o currículo.",
   },
   step1: {
     kicker: "PASSO 01 DE 04",
@@ -193,6 +194,15 @@ const pt = {
     imported: "Currículo importado",
     tryAgain: "Enviar outro arquivo",
     removeFile: "Remover arquivo",
+  },
+  payment: {
+    title: "Envio bloqueado",
+    body: "Cobramos um valor simbólico de R$ 2,00 para cobrir o custo de gerar o seu currículo.",
+    cta: "Liberar o envio",
+    redirecting: "Redirecionando para o pagamento…",
+    canceled: "Pagamento cancelado. Você pode tentar de novo quando quiser.",
+    error: "Não foi possível confirmar o pagamento. Tente novamente.",
+    checkoutFailed: "Não foi possível iniciar o pagamento. Tente novamente.",
   },
   step4: {
     kicker: "PASSO 04 DE 04",
@@ -421,6 +431,7 @@ const en: Dictionary = {
       "This file does not look like a resume. Please upload the document with your professional experience, as DOCX or PDF.",
     "rewrite-detected":
       "We couldn't organize the resume without altering its text. Please try again.",
+    "payment-required": "Payment is required before importing the resume.",
   },
   step1: {
     kicker: "STEP 01 OF 04",
@@ -432,6 +443,15 @@ const en: Dictionary = {
     imported: "Resume imported",
     tryAgain: "Send another file",
     removeFile: "Remove file",
+  },
+  payment: {
+    title: "Upload locked",
+    body: "We charge a symbolic US$ 0.40 fee to cover the cost of generating your resume.",
+    cta: "Unlock upload",
+    redirecting: "Redirecting to payment…",
+    canceled: "Payment canceled. You can try again whenever you like.",
+    error: "The payment could not be confirmed. Please try again.",
+    checkoutFailed: "The payment could not be started. Please try again.",
   },
   step4: {
     kicker: "STEP 04 OF 04",

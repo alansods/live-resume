@@ -7,16 +7,34 @@ import {
 } from "@/fixtures/ai-responses";
 import { failingClient, recordedClient } from "@/lib/ai/testing";
 import * as parsing from "@/lib/parsing";
+import { resetConsumedNonces, signToken } from "@/lib/payments";
 import { POST } from "./route";
 
 const fixture = (nome: string) =>
   readFileSync(join(process.cwd(), "fixtures", "files", nome));
 
-function requisicaoCom(nome: string, tipo = "application/octet-stream") {
+let proximoNonce = 0;
+
+/** Um token válido e ainda não usado, próprio de cada chamada de teste. */
+function tokenValido() {
+  proximoNonce += 1;
+  return signToken(`nonce-teste-${proximoNonce}`);
+}
+
+function requisicaoCom(
+  nome: string,
+  {
+    tipo = "application/octet-stream",
+    token = tokenValido(),
+  }: { tipo?: string; token?: string | null } = {},
+) {
   const form = new FormData();
   form.append("file", new File([new Uint8Array(fixture(nome))], nome, { type: tipo }));
+  const headers = new Headers();
+  if (token !== null) headers.set("x-paid-session", token);
   return new Request("http://localhost/api/resume-import", {
     method: "POST",
+    headers,
     body: form,
   });
 }
@@ -36,8 +54,10 @@ describe("Fronteira HTTP da importação", () => {
   const avisos: unknown[][] = [];
   let warn: ReturnType<typeof vi.spyOn>;
   let error: ReturnType<typeof vi.spyOn>;
+  const segredoOriginal = process.env.PAYMENT_TOKEN_SECRET;
 
   beforeEach(() => {
+    process.env.PAYMENT_TOKEN_SECRET = "segredo-de-teste";
     avisos.length = 0;
     warn = vi.spyOn(console, "warn").mockImplementation((...args) => {
       avisos.push(args);
@@ -48,9 +68,11 @@ describe("Fronteira HTTP da importação", () => {
   });
 
   afterEach(() => {
+    process.env.PAYMENT_TOKEN_SECRET = segredoOriginal;
     warn.mockRestore();
     error.mockRestore();
     vi.restoreAllMocks();
+    resetConsumedNonces();
   });
 
   test("Nada é gravado em disco", async () => {
@@ -145,12 +167,92 @@ describe("Fronteira HTTP da importação", () => {
     const resposta = await POST(
       new Request("http://localhost/api/resume-import", {
         method: "POST",
+        headers: { "x-paid-session": tokenValido() },
         body: new FormData(),
       }),
     );
 
     expect(resposta.status).toBe(400);
     expect((await resposta.json()).error.code).toBe("missing-file");
+  });
+
+  test("Requisição sem token é recusada antes de tocar no arquivo", async () => {
+    const spy = comIaGravada();
+
+    const resposta = await POST(
+      requisicaoCom("curriculo-completo.docx", { token: null }),
+    );
+
+    expect(resposta.status).toBe(402);
+    expect((await resposta.json()).error.code).toBe("payment-required");
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  test("Token inválido ou expirado é recusado", async () => {
+    const invalido = await POST(
+      requisicaoCom("curriculo-completo.docx", { token: "token-que-nao-verifica" }),
+    );
+    expect(invalido.status).toBe(402);
+
+    const expirado = signToken("nonce-expirado", Date.now() - 31 * 60 * 1000);
+    const resposta = await POST(
+      requisicaoCom("curriculo-completo.docx", { token: expirado }),
+    );
+    expect(resposta.status).toBe(402);
+  });
+
+  test("Token válido libera a importação normal", async () => {
+    const spy = comIaGravada();
+
+    const resposta = await POST(requisicaoCom("curriculo-completo.docx"));
+
+    expect(resposta.status).toBe(200);
+    spy.mockRestore();
+  });
+
+  test("Token consumido não autoriza nova importação", async () => {
+    const spy = comIaGravada();
+    const token = tokenValido();
+
+    const primeira = await POST(requisicaoCom("curriculo-completo.docx", { token }));
+    expect(primeira.status).toBe(200);
+
+    const segunda = await POST(requisicaoCom("curriculo-completo.docx", { token }));
+    expect(segunda.status).toBe(402);
+
+    spy.mockRestore();
+  });
+
+  test("Falha do arquivo depois do token validado não consome o token", async () => {
+    const token = tokenValido();
+
+    const primeira = await POST(requisicaoCom("curriculo.odt", { token }));
+    expect(primeira.status).toBe(415);
+
+    const spy = comIaGravada();
+    const segunda = await POST(requisicaoCom("curriculo-completo.docx", { token }));
+    expect(segunda.status).toBe(200);
+    spy.mockRestore();
+  });
+
+  test("Importação que falha não consome o token", async () => {
+    const token = tokenValido();
+
+    const original = parsing.importResume;
+    const spyFalha = vi
+      .spyOn(parsing, "importResume")
+      .mockImplementation((bytes, options) =>
+        original(bytes, { ...options, client: failingClient("quota-exceeded") }),
+      );
+    const falhou = await POST(requisicaoCom("curriculo-completo.docx", { token }));
+    expect(falhou.status).toBe(429);
+    spyFalha.mockRestore();
+
+    const spy = comIaGravada();
+    const depois = await POST(requisicaoCom("curriculo-completo.docx", { token }));
+    expect(depois.status).toBe(200);
+    spy.mockRestore();
   });
 });
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { AiError } from "@/lib/ai/client";
 import { ImportError, MAX_FILE_BYTES, importResume } from "@/lib/parsing";
 import { RewriteDetectedError } from "@/lib/parsing/verify";
+import { isConsumed, markConsumed, verifyToken } from "@/lib/payments";
 
 /**
  * Importação de currículo pela rede.
@@ -39,7 +40,32 @@ function erro(code: string, message: string, status: number) {
   return NextResponse.json({ error: { code, message } }, { status });
 }
 
+/**
+ * Sem token, ou com token que não verifica ou já foi usado: nem o arquivo é lido.
+ * `capability payments` é quem define assinatura e validade; aqui só se decide entre
+ * "sem token", "inválido/expirado" e "já consumido" — os três chegam a 402.
+ */
+function tokenPago(request: Request): { nonce: string } | null {
+  const cabecalho = request.headers.get("x-paid-session");
+  if (!cabecalho) return null;
+
+  const decodificado = verifyToken(cabecalho);
+  if (!decodificado) return null;
+  if (isConsumed(decodificado.nonce)) return null;
+
+  return { nonce: decodificado.nonce };
+}
+
 export async function POST(request: Request) {
+  const sessaoPaga = tokenPago(request);
+  if (!sessaoPaga) {
+    return erro(
+      "payment-required",
+      "É preciso confirmar o pagamento antes de importar o currículo.",
+      402,
+    );
+  }
+
   let bytes: Uint8Array;
   let fileName: string | undefined;
 
@@ -73,6 +99,7 @@ export async function POST(request: Request) {
 
   try {
     const { resume, report } = await importResume(bytes, { fileName });
+    markConsumed(sessaoPaga.nonce);
     return NextResponse.json({ resume, report });
   } catch (error) {
     if (error instanceof ImportError) {

@@ -287,6 +287,12 @@
   color: var(--color-accent);
 }
 
+/* O cartão do gate de pagamento: centralizado, mesma largura do bloco acima dele. */
+.paymentCard {
+  align-items: center;
+  text-align: center;
+}
+
 .importedCard {
   display: flex;
   align-items: center;
@@ -333,7 +339,9 @@
   background: transparent;
   color: var(--color-neutral-600);
   cursor: pointer;
-  transition: background-color 0.22s ease, color 0.22s ease;
+  transition:
+    background-color 0.22s ease,
+    color 0.22s ease;
 }
 
 .removeButton:hover {

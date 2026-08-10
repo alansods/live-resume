@@ -53,6 +53,8 @@ const importedResumeSerializado = JSON.parse(serializeResumeReal(importedResume)
 describe("Falha na análise oferece nova tentativa", () => {
   test("Falha na análise oferece nova tentativa", async () => {
     mockarImportacao();
+    // Simula "já pagou": este teste cobre a falha da análise, não o gate de pagamento.
+    window.history.pushState({}, "", "/?paid_session=sessao-de-teste");
     render(
       <LocaleProvider initialLocale="pt">
         <AppShell />

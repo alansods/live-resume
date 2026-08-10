@@ -1,10 +1,10 @@
 "use client";
 
 import { CheckCircle, FileArrowUp, X } from "@phosphor-icons/react";
-import { Button } from "@/components/ui";
+import { Button, Card } from "@/components/ui";
 import { FailureNotice, WarningNotice } from "@/components/ui/Notice";
-import { useRef, useState } from "react";
-import { useT } from "@/lib/i18n/context";
+import { useEffect, useRef, useState } from "react";
+import { useLocale, useT } from "@/lib/i18n/context";
 import type { Translations } from "@/lib/i18n/dictionary";
 import { MAX_FILE_BYTES } from "@/lib/parsing/blocks";
 import type { ImportReport } from "@/lib/parsing/report";
@@ -71,6 +71,51 @@ function mensagemDaRecusa(t: Translations, code: string, doServidor?: string): s
   return texto.replace("{limit}", LIMITE_EM_MB);
 }
 
+type StatusPagamento = "idle" | "redirecting" | "canceled" | "error";
+
+/**
+ * O que a URL de retorno do Checkout diz, sem tocar nela.
+ *
+ * `URLSearchParams`, não `new URL()`: código de teste em outro lugar do shell substitui
+ * o `URL` global por um objeto sem construtor, para simular
+ * `createObjectURL`/`revokeObjectURL` — `new URL()` quebraria nesses testes.
+ *
+ * `typeof window === "undefined"` cobre a renderização no servidor, que não tem URL de
+ * navegador nenhuma para ler.
+ */
+function retornoDoCheckout(): { token: string | null; status: StatusPagamento } {
+  if (typeof window === "undefined") return { token: null, status: "idle" };
+
+  const params = new URLSearchParams(window.location.search);
+  const recebido = params.get("paid_session");
+  if (recebido) return { token: recebido, status: "idle" };
+  if (params.get("payment_canceled")) return { token: null, status: "canceled" };
+  if (params.get("payment_error")) return { token: null, status: "error" };
+  return { token: null, status: "idle" };
+}
+
+/** Apaga o retorno do Checkout da barra de endereço, depois de já ter sido lido. */
+function limparRetornoDoCheckout(): void {
+  if (typeof window === "undefined") return;
+
+  const params = new URLSearchParams(window.location.search);
+  if (
+    !params.has("paid_session") &&
+    !params.has("payment_canceled") &&
+    !params.has("payment_error")
+  ) {
+    return;
+  }
+
+  params.delete("paid_session");
+  params.delete("payment_canceled");
+  params.delete("payment_error");
+  const resto = params.toString();
+  const novaHref =
+    window.location.pathname + (resto ? `?${resto}` : "") + window.location.hash;
+  window.history.replaceState({}, "", novaHref);
+}
+
 type Props = {
   fileName: string | null;
   /**
@@ -84,6 +129,7 @@ type Props = {
 
 export function ImportStep({ fileName, onImported, onClear }: Props) {
   const t = useT();
+  const { locale } = useLocale();
   const input = useRef<HTMLInputElement>(null);
   const [nomeEmProgresso, setNomeEmProgresso] = useState<string | null>(null);
   const [progresso, acoes] = useProgress(IMPORT_STAGES);
@@ -91,7 +137,53 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
   const [aviso, setAviso] = useState<{ atencao: boolean; texto: string } | null>(null);
   const [sobre, setSobre] = useState(false);
 
+  /**
+   * Token de sessão paga. Vive só em memória do componente — nunca em `localStorage`
+   * nem em cookie. Recarregar a página perde o token, exatamente como perde o resto
+   * do estado da sessão.
+   *
+   * Começa `null`/"idle" nos dois lados (servidor e cliente) de propósito: o servidor
+   * não tem `window` para ler a URL de retorno do Checkout, então só o efeito abaixo —
+   * que roda só no cliente, depois da primeira renderização — pode ler o valor real.
+   * Ler a URL direto na inicialização do estado (fora de efeito) renderizava o
+   * servidor sempre bloqueado e o cliente, quando havia `paid_session` na URL, já
+   * liberado — a divergência que o React reporta como "hydration mismatch".
+   */
+  const [tokenPago, setTokenPago] = useState<string | null>(null);
+  const [statusPagamento, setStatusPagamento] = useState<StatusPagamento>("idle");
+
+  useEffect(() => {
+    // Lê algo que só existe no navegador (URL de retorno do Checkout) — setState
+    // aqui dentro é o único jeito de fazer isso sem divergir do HTML do servidor.
+    const retorno = retornoDoCheckout();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (retorno.token) setTokenPago(retorno.token);
+    else if (retorno.status !== "idle") setStatusPagamento(retorno.status);
+    limparRetornoDoCheckout();
+  }, []);
+
+  async function pagar() {
+    setStatusPagamento("redirecting");
+    try {
+      const resposta = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ locale }),
+      });
+      const corpo = await resposta.json();
+      if (!resposta.ok || !corpo.url) {
+        setStatusPagamento("error");
+        return;
+      }
+      window.location.href = corpo.url;
+    } catch {
+      setStatusPagamento("error");
+    }
+  }
+
   async function importar(arquivo: File) {
+    if (!tokenPago) return;
+
     setNomeEmProgresso(arquivo.name);
     setAviso(null);
     acoes.start();
@@ -100,11 +192,24 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
       const form = new FormData();
       form.append("file", arquivo);
 
-      const resposta = await fetch("/api/resume-import", { method: "POST", body: form });
+      const resposta = await fetch("/api/resume-import", {
+        method: "POST",
+        headers: { "x-paid-session": tokenPago },
+        body: form,
+      });
       const corpo = await resposta.json();
 
       if (!resposta.ok) {
         const code = String(corpo?.error?.code ?? "");
+
+        // Token expirou ou já foi usado entre a confirmação e o envio do arquivo — a
+        // pessoa precisa pagar de novo, não tentar o mesmo arquivo outra vez.
+        if (code === "payment-required") {
+          setTokenPago(null);
+          acoes.reset();
+          return;
+        }
+
         const texto =
           code === "quota-exceeded"
             ? t.failure.quota
@@ -120,6 +225,7 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
       }
 
       acoes.finish();
+      setTokenPago(null);
       onImported(
         deserializeResume(corpo.resume),
         arquivo.name,
@@ -165,6 +271,29 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
             <X size={16} aria-hidden />
           </button>
         </div>
+      ) : tokenPago === null ? (
+        <>
+          <Card className={styles.paymentCard}>
+            <strong className={styles.importedTitle}>{t.payment.title}</strong>
+            <p className={styles.dropText}>{t.payment.body}</p>
+            <Button
+              onClick={() => void pagar()}
+              disabled={statusPagamento === "redirecting"}
+            >
+              {statusPagamento === "redirecting" ? t.payment.redirecting : t.payment.cta}
+            </Button>
+          </Card>
+
+          {statusPagamento === "canceled" || statusPagamento === "error" ? (
+            <div className={styles.stepNotice}>
+              {statusPagamento === "canceled" ? (
+                <WarningNotice>{t.payment.canceled}</WarningNotice>
+              ) : (
+                <FailureNotice>{t.payment.error}</FailureNotice>
+              )}
+            </div>
+          ) : null}
+        </>
       ) : (
         <div
           className={sobre ? styles.dropzoneOver : styles.dropzone}
@@ -214,7 +343,6 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
           )}
         </div>
       ) : null}
-
     </div>
   );
 }

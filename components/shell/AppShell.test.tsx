@@ -176,12 +176,20 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const montar = (locale: Locale = "pt") =>
-  render(
+/**
+ * Estes testes cobrem o fluxo depois de importado — não o gate de pagamento, que tem
+ * suíte própria (`ImportStep.payment.test.tsx`). Renderizar já com `paid_session` na URL
+ * é o equivalente, aqui, a "o usuário já pagou": a etapa 01 libera a dropzone
+ * imediatamente, como acontecia antes do pagamento existir.
+ */
+const montar = (locale: Locale = "pt") => {
+  window.history.pushState({}, "", "/?paid_session=sessao-de-teste");
+  return render(
     <LocaleProvider initialLocale={locale}>
       <AppShell />
     </LocaleProvider>,
   );
+};
 
 /** Importa um arquivo pelo input da etapa 01. */
 async function importar() {
@@ -1505,9 +1513,9 @@ describe("Fidelidade ao design do shell", () => {
     // A confirmação da importação: check da mensagem + X de remover.
     const confirmacao = container.querySelector("[class*=importedCard]")!;
     expect(svgsDe(confirmacao).length).toBe(2);
-    expect(
-      svgsDe(screen.getByRole("button", { name: "Remover arquivo" })).length,
-    ).toBe(1);
+    expect(svgsDe(screen.getByRole("button", { name: "Remover arquivo" })).length).toBe(
+      1,
+    );
 
     // Etapa 04: legendas e botão de download.
     irPara(/4\. Exportar/);
@@ -1713,7 +1721,9 @@ describe("Progresso de importação por etapa nomeada", () => {
     expect(screen.getByRole("button", { name: "Remover arquivo" })).toBeTruthy();
   });
 
-  test("Remover o arquivo volta à dropzone e retrava o fluxo", async () => {
+  test("Remover o arquivo volta ao gate de pagamento e retrava o fluxo", async () => {
+    // O token de sessão paga é de uso único: consumido na importação que deu certo,
+    // remover o arquivo e importar outro exige nova sessão paga (nova chamada de IA).
     mockarFetch();
     montar();
     await importar();
@@ -1721,7 +1731,8 @@ describe("Progresso de importação por etapa nomeada", () => {
     fireEvent.click(screen.getByRole("button", { name: "Remover arquivo" }));
 
     expect(screen.queryByText("Currículo importado")).toBeNull();
-    expect(screen.getByLabelText("Selecionar arquivo")).toBeTruthy();
+    expect(screen.queryByLabelText("Selecionar arquivo")).toBeNull();
+    expect(screen.getByRole("button", { name: "Liberar o envio" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Avançar" })).toHaveProperty(
       "disabled",
       true,
@@ -1987,7 +1998,9 @@ describe("Conclusão da exportação", () => {
       "ariaCurrent",
       "step",
     );
-    expect(screen.getByLabelText("Selecionar arquivo")).toBeTruthy();
+    // O token da sessão anterior já foi consumido pela importação que deu certo — um
+    // novo currículo exige nova sessão paga antes de a dropzone voltar.
+    expect(screen.getByRole("button", { name: "Liberar o envio" })).toBeTruthy();
     expect(screen.queryByText("Currículo importado")).toBeNull();
   });
 });
