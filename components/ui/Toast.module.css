@@ -1,0 +1,72 @@
+/*
+ * Fixo, centralizado no topo, acima do conteúdo — abaixo da top bar (84px ~ altura dela
+ * mais um respiro) para não sobrepor a marca nem o toggle de idioma.
+ */
+.toast {
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  max-width: min(90vw, 440px);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 13px;
+  animation: toastIn 0.22s ease-out;
+}
+
+.success {
+  background: color-mix(in srgb, var(--color-success) 16%, var(--color-bg) 84%);
+  border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+}
+
+.success .icon {
+  color: var(--color-success);
+}
+
+/* Mesmos tons dos avisos fixos (`Notice`): âmbar para atenção, accent para falha. */
+.warning {
+  background: var(--color-warning-900);
+  border: 1px solid color-mix(in srgb, var(--color-warning-400) 28%, transparent);
+}
+
+.warning .icon {
+  color: var(--color-warning-400);
+}
+
+.failure {
+  background: var(--color-accent-900);
+}
+
+.failure .icon {
+  color: var(--color-accent-400);
+}
+
+.icon {
+  flex: none;
+}
+
+.corpo {
+  color: var(--color-text);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}

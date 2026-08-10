@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { LocaleProvider } from "@/lib/i18n/context";
 import { ImportStep } from "./ImportStep";
@@ -87,5 +87,45 @@ describe("Gate de pagamento na etapa 01", () => {
     montar();
     expect(screen.queryByText(/reembolso/i)).toBeNull();
     expect(screen.queryByRole("button", { name: /reembolso|refund/i })).toBeNull();
+  });
+
+  test("Pagamento confirmado mostra toast de sucesso", () => {
+    window.history.pushState({}, "", "/?paid_session=token-de-teste");
+    montar();
+    expect(screen.getByRole("status").textContent).toMatch(/pagamento confirmado/i);
+  });
+
+  test("Pagamento cancelado mostra toast de atenção", () => {
+    window.history.pushState({}, "", "/?payment_canceled=1");
+    montar();
+    expect(screen.getByRole("status").textContent).toMatch(/pagamento cancelado/i);
+  });
+
+  test("Falha ao confirmar pagamento mostra toast de falha", () => {
+    window.history.pushState({}, "", "/?payment_error=1");
+    montar();
+    expect(screen.getByRole("status").textContent).toMatch(
+      /não foi possível confirmar o pagamento/i,
+    );
+  });
+
+  test("Falha ao iniciar o pagamento mostra toast de falha", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false, json: async () => ({}) })),
+    );
+    montar();
+
+    fireEvent.click(screen.getByRole("button", { name: "Liberar o envio" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("status").textContent).toMatch(
+        /não foi possível iniciar o pagamento/i,
+      ),
+    );
+    expect(screen.getByRole("button", { name: "Liberar o envio" })).toHaveProperty(
+      "disabled",
+      false,
+    );
   });
 });

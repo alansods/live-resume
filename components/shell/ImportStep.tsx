@@ -3,6 +3,7 @@
 import { CheckCircle, FileArrowUp, X } from "@phosphor-icons/react";
 import { Button, Card } from "@/components/ui";
 import { FailureNotice, WarningNotice } from "@/components/ui/Notice";
+import { Toast, type ToastTone } from "@/components/ui/Toast";
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useT } from "@/lib/i18n/context";
 import type { Translations } from "@/lib/i18n/dictionary";
@@ -71,7 +72,11 @@ function mensagemDaRecusa(t: Translations, code: string, doServidor?: string): s
   return texto.replace("{limit}", LIMITE_EM_MB);
 }
 
-type StatusPagamento = "idle" | "redirecting" | "canceled" | "error";
+/** Estado só do botão de pagar — nada a ver com o retorno do Checkout. */
+type StatusPagamento = "idle" | "redirecting";
+
+/** O que a URL de retorno diz sobre o pagamento, para o toast de feedback. */
+type RetornoCheckout = "idle" | "confirmed" | "canceled" | "error";
 
 /**
  * O que a URL de retorno do Checkout diz, sem tocar nela.
@@ -83,12 +88,12 @@ type StatusPagamento = "idle" | "redirecting" | "canceled" | "error";
  * `typeof window === "undefined"` cobre a renderização no servidor, que não tem URL de
  * navegador nenhuma para ler.
  */
-function retornoDoCheckout(): { token: string | null; status: StatusPagamento } {
+function retornoDoCheckout(): { token: string | null; status: RetornoCheckout } {
   if (typeof window === "undefined") return { token: null, status: "idle" };
 
   const params = new URLSearchParams(window.location.search);
   const recebido = params.get("paid_session");
-  if (recebido) return { token: recebido, status: "idle" };
+  if (recebido) return { token: recebido, status: "confirmed" };
   if (params.get("payment_canceled")) return { token: null, status: "canceled" };
   if (params.get("payment_error")) return { token: null, status: "error" };
   return { token: null, status: "idle" };
@@ -152,15 +157,36 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
   const [tokenPago, setTokenPago] = useState<string | null>(null);
   const [statusPagamento, setStatusPagamento] = useState<StatusPagamento>("idle");
 
+  /**
+   * Feedback passageiro do retorno do Checkout — sucesso, cancelamento ou falha na
+   * confirmação. Some sozinho depois de alguns segundos (efeito abaixo).
+   */
+  const [toast, setToast] = useState<{ tone: ToastTone; texto: string } | null>(null);
+
   useEffect(() => {
     // Lê algo que só existe no navegador (URL de retorno do Checkout) — setState
     // aqui dentro é o único jeito de fazer isso sem divergir do HTML do servidor.
     const retorno = retornoDoCheckout();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (retorno.token) setTokenPago(retorno.token);
-    else if (retorno.status !== "idle") setStatusPagamento(retorno.status);
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (retorno.token) {
+      setTokenPago(retorno.token);
+      setToast({ tone: "success", texto: t.payment.confirmed });
+    } else if (retorno.status === "canceled") {
+      setToast({ tone: "warning", texto: t.payment.canceled });
+    } else if (retorno.status === "error") {
+      setToast({ tone: "failure", texto: t.payment.error });
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
     limparRetornoDoCheckout();
+    // Só na montagem: é o retorno do Checkout que este efeito captura, uma vez.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   async function pagar() {
     setStatusPagamento("redirecting");
@@ -172,12 +198,14 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
       });
       const corpo = await resposta.json();
       if (!resposta.ok || !corpo.url) {
-        setStatusPagamento("error");
+        setStatusPagamento("idle");
+        setToast({ tone: "failure", texto: t.payment.checkoutFailed });
         return;
       }
       window.location.href = corpo.url;
     } catch {
-      setStatusPagamento("error");
+      setStatusPagamento("idle");
+      setToast({ tone: "failure", texto: t.payment.checkoutFailed });
     }
   }
 
@@ -242,6 +270,8 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
 
   return (
     <div className={styles.stepColumn}>
+      {toast ? <Toast tone={toast.tone}>{toast.texto}</Toast> : null}
+
       <p className={styles.kicker}>{t.step1.kicker}</p>
       <h2 className={styles.title}>{t.step1.title}</h2>
       <p className={styles.subtitle}>{t.step1.subtitle}</p>
@@ -272,28 +302,16 @@ export function ImportStep({ fileName, onImported, onClear }: Props) {
           </button>
         </div>
       ) : tokenPago === null ? (
-        <>
-          <Card className={styles.paymentCard}>
-            <strong className={styles.importedTitle}>{t.payment.title}</strong>
-            <p className={styles.dropText}>{t.payment.body}</p>
-            <Button
-              onClick={() => void pagar()}
-              disabled={statusPagamento === "redirecting"}
-            >
-              {statusPagamento === "redirecting" ? t.payment.redirecting : t.payment.cta}
-            </Button>
-          </Card>
-
-          {statusPagamento === "canceled" || statusPagamento === "error" ? (
-            <div className={styles.stepNotice}>
-              {statusPagamento === "canceled" ? (
-                <WarningNotice>{t.payment.canceled}</WarningNotice>
-              ) : (
-                <FailureNotice>{t.payment.error}</FailureNotice>
-              )}
-            </div>
-          ) : null}
-        </>
+        <Card className={styles.paymentCard}>
+          <strong className={styles.importedTitle}>{t.payment.title}</strong>
+          <p className={styles.dropText}>{t.payment.body}</p>
+          <Button
+            onClick={() => void pagar()}
+            disabled={statusPagamento === "redirecting"}
+          >
+            {statusPagamento === "redirecting" ? t.payment.redirecting : t.payment.cta}
+          </Button>
+        </Card>
       ) : (
         <div
           className={sobre ? styles.dropzoneOver : styles.dropzone}

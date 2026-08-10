@@ -47,7 +47,8 @@
       component state, strip it from the URL via `history.replaceState`
 - [x] 4.4 Gate the dropzone (selection and drag-and-drop) behind "token present" state; send the
       token as a request header on the import call
-- [x] 4.5 Handle the Checkout `cancel_url` return: stay on the unpaid CTA state, no error shown
+- [x] 4.5 Handle the Checkout `cancel_url` return: stay on the unpaid CTA state, with a
+      transient toast acknowledging the cancellation
 - [x] 4.6 i18n strings (PT/EN) for the CTA, price display, and any new error states (402 reasons)
       in the existing dictionaries
 - [x] 4.7 Style the CTA and price display with `claude-design/styles.css` tokens only (no literal

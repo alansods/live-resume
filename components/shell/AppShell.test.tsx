@@ -184,11 +184,24 @@ afterEach(() => {
  */
 const montar = (locale: Locale = "pt") => {
   window.history.pushState({}, "", "/?paid_session=sessao-de-teste");
-  return render(
+
+  // O retorno do Checkout também mostra um toast de confirmação passageiro (5s) — estes
+  // testes cobrem o que vem depois do pagamento, não o toast em si (que tem suíte
+  // própria em `ImportStep.payment.test.tsx`), e o `role="status"` dele colide com o das
+  // etapas de progresso. Adianta o relógio para ele já ter sumido antes da primeira
+  // asserção.
+  vi.useFakeTimers();
+  const view = render(
     <LocaleProvider initialLocale={locale}>
       <AppShell />
     </LocaleProvider>,
   );
+  act(() => {
+    vi.advanceTimersByTime(5000);
+  });
+  vi.useRealTimers();
+
+  return view;
 };
 
 /** Importa um arquivo pelo input da etapa 01. */

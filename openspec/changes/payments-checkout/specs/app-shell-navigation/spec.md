@@ -78,3 +78,30 @@ idioma continua sendo a única exceção guardada no navegador.
 
 - **WHEN** o armazenamento do navegador é inspecionado depois de um pagamento confirmado
 - **THEN** nenhuma entrada de `localStorage`, `sessionStorage` ou cookie contém o token
+
+### Requirement: Retorno do Checkout mostra aviso passageiro
+
+Ao capturar o retorno do Checkout, a etapa 01 SHALL exibir um aviso passageiro (toast) que
+some sozinho depois de alguns segundos, distinto do aviso fixo usado para recusa de arquivo.
+O tom SHALL corresponder ao resultado: confirmação em tom de sucesso, cancelamento em tom de
+atenção, falha em tom de falha.
+
+#### Scenario: Pagamento confirmado mostra toast de sucesso
+
+- **WHEN** o usuário retorna do Checkout com o token de sessão paga na URL
+- **THEN** a etapa 01 exibe um toast de sucesso confirmando o pagamento
+
+#### Scenario: Pagamento cancelado mostra toast de atenção
+
+- **WHEN** o usuário retorna do Checkout tendo cancelado
+- **THEN** a etapa 01 exibe um toast de atenção informando o cancelamento
+
+#### Scenario: Falha ao confirmar pagamento mostra toast de falha
+
+- **WHEN** o retorno do Checkout indica falha na confirmação do pagamento
+- **THEN** a etapa 01 exibe um toast de falha
+
+#### Scenario: Falha ao iniciar o pagamento mostra toast de falha
+
+- **WHEN** a chamada que cria a sessão de Checkout falha
+- **THEN** a etapa 01 exibe um toast de falha, e o botão de pagar volta a ficar disponível
